@@ -13,7 +13,8 @@ pip install git+https://github.com/OneraHub/openmdao_extensions.git
 ```
 
 ## License
- Copyright 2019 Rémi Lafage
+
+   Copyright 2019 Rémi Lafage
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
