@@ -26,8 +26,7 @@ class SmtDoeDriver(Driver):
         super(SmtDoeDriver, self).__init__()
 
         if SMTDRIVER_DISABLED:
-            raises RuntimeError('SMT library is not installed. \
-                                cf. https://https://smt.readthedocs.io/en/latest')
+            raise RuntimeError('SMT library is not installed. cf. https://https://smt.readthedocs.io/en/latest')
 
         self.options.declare('sampling_method', 'LHS', values=list(_sampling_methods.keys()),
                              desc='Name of SMT sampling method used to generate doe cases')

@@ -60,7 +60,7 @@ class OneraSegoDriver(Driver):
                              desc='Name of optimizers to use')
         
     def _setup_driver(self, problem):
-        super(OneramdaoOptimizerDriver, self)._setup_driver(problem)
+        super(OneraSegoDriver, self)._setup_driver(problem)
         
         self.comm = None
 
