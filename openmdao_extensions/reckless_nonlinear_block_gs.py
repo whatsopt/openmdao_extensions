@@ -157,7 +157,7 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
                 rerrs[i] = np.linalg.norm(residual) / np.linalg.norm(outputs[i])
             is_rtol_converged = (rerrs < self._convrg_rtols).all()
         else:
-            is_rtol_converged = super(RecklessNonlinearBlockGS, self)._is_rtol_converged(norm, norm0)
+            is_rtol_converged = norm / norm0 < self.options['rtol']
         return is_rtol_converged
 
     def _iter_get_norm(self):
