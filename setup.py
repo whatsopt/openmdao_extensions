@@ -4,7 +4,12 @@ Author: Remi Lafage <remi.lafage@onera.fr>
 This package is distributed under Apache 2 license.
 '''
 
-from setuptools import setup, Extension
+from setuptools import setup
+
+from os import path
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 CLASSIFIERS = """
 Development Status :: 4 - Beta
@@ -23,8 +28,10 @@ Operating System :: MacOS
 
 metadata = dict(
     name='openmdao_extensions',
-    version='0.1.1',
+    version='0.1.2',
     description='Additional solvers and drivers for OpenMDAO framework',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Rémi Lafage',
     author_email='remi.lafage@onera.fr',
     license='Apache License, Version 2.0',
