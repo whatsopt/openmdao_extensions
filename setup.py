@@ -23,7 +23,7 @@ Operating System :: MacOS
 
 metadata = dict(
     name='openmdao_extensions',
-    version='0.1.0',
+    version='0.1.1',
     description='Additional solvers and drivers for OpenMDAO framework',
     author='Rémi Lafage',
     author_email='remi.lafage@onera.fr',
