@@ -6,13 +6,13 @@ from openmdao.core.driver import Driver, RecordingDebugging
 from openmdao.core.analysis_error import AnalysisError
 from openmdao.recorders.recording_iteration_stack import Recording
 
-ONERASEGODRIVER_DISABLED = False
+ONERASEGO_NOT_INSTALLED = False
 try:
     from segomoe.sego_defs import get_sego_options, ExitStatus
     from segomoe.constraint import Constraint
     from segomoe.sego import Sego
 except ImportError:
-    ONERASEGODRIVER_DISABLED = True
+    ONERASEGO_NOT_INSTALLED = True
 
 def to_list(l, size):
     if not (isinstance(l, np.ndarray) or isinstance(l, list)):
@@ -36,7 +36,7 @@ class OneraSegoDriver(Driver):
         """
         super(OneraSegoDriver, self).__init__(**kwargs)
 
-        if ONERASEGODRIVER_DISABLED:
+        if ONERASEGO_NOT_INSTALLED:
             raise RuntimeError('Onera SEGOMOE library is not installed.')
 
         # What we support

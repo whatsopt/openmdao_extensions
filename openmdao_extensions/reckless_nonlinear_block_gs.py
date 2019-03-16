@@ -25,7 +25,7 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
         value is used for all specified variables. Only used if _convrg_vars is set.
     """
 
-    SOLVER = 'NL: RECKLESS_NLBGS'
+    SOLVER = 'NL: RNLBGS'
 
     def __init__(self, **kwargs):
         """

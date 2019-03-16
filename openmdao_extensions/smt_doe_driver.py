@@ -9,11 +9,11 @@ import numpy as np
 
 from openmdao.core.driver import Driver, RecordingDebugging
 
-SMTDRIVER_DISABLED = False
+SMT_NOT_INSTALLED = False
 try:
     from smt.sampling_methods import FullFactorial, LHS, Random
 except:
-    SMTDRIVER_DISABLED = False
+    SMT_NOT_INSTALLED = False
 
 _sampling_methods = {'FullFactorial': FullFactorial, 'LHS': LHS, 'Random': Random}
 
@@ -25,7 +25,7 @@ class SmtDoeDriver(Driver):
     def __init__(self, **kwargs):
         super(SmtDoeDriver, self).__init__()
 
-        if SMTDRIVER_DISABLED:
+        if SMT_NOT_INSTALLED:
             raise RuntimeError('SMT library is not installed. cf. https://https://smt.readthedocs.io/en/latest')
 
         self.options.declare('sampling_method', 'LHS', values=list(_sampling_methods.keys()),

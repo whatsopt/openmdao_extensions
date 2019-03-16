@@ -5,7 +5,7 @@ from math import cos, sin, pi
 from openmdao.api import IndepVarComp, Problem, Group, SqliteRecorder, CaseReader, ExplicitComponent
 from openmdao.test_suite.components.sellar_feature import SellarDis1, SellarDis2, SellarMDA
 from openmdao_extensions.onera_sego_driver import OneraSegoDriver
-from openmdao_extensions.onera_sego_driver import ONERASEGODRIVER_DISABLED
+from openmdao_extensions.onera_sego_driver import ONERASEGO_NOT_INSTALLED
 
 class Branin(ExplicitComponent):
     
@@ -97,7 +97,7 @@ class TestSegoMoe(unittest.TestCase):
             case = reader.get_case(case_id)
             print(case.outputs['obj'])
 
-    @unittest.skipIf(ONERASEGODRIVER_DISABLED, 'SEGOME is not installed')
+    @unittest.skipIf(ONERASEGO_NOT_INSTALLED, 'SEGOMOE is not installed')
     def test_branin(self):
         self.pb = pb = Problem(BraninMDA())
         pb.model.add_design_var('x1', lower=-5, upper=10)
@@ -128,7 +128,7 @@ class TestSegoMoe(unittest.TestCase):
             case = reader.get_case(case_id)
             print(case.outputs['obj'])
 
-    @unittest.skipIf(ONERASEGODRIVER_DISABLED, 'SEGOME is not installed')
+    @unittest.skipIf(ONERASEGO_NOT_INSTALLED, 'SEGOME is not installed')
     def test_ackley(self):
         self.pb = pb = Problem(AckleyMDA())
         pb.model.add_design_var('x', lower=-32.768, upper=32.768)
@@ -156,9 +156,6 @@ class TestSegoMoe(unittest.TestCase):
         for case_id in reader.list_cases():
             case = reader.get_case(case_id)
             print(case.outputs['obj'])
-
-
-
      
 if __name__ == '__main__':
     unittest.main()

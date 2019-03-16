@@ -3,7 +3,7 @@ import unittest
 from openmdao.api import IndepVarComp, Problem, Group, SqliteRecorder, CaseReader
 from openmdao.test_suite.components.sellar_feature import SellarDis1, SellarDis2, SellarMDA
 from openmdao_extensions.smt_doe_driver import SmtDoeDriver
-from openmdao_extensions.smt_doe_driver import SMTDRIVER_DISABLED
+from openmdao_extensions.smt_doe_driver import SMT_NOT_INSTALLED
 
 class TestSmtDoeDriver(unittest.TestCase):
 
@@ -20,11 +20,13 @@ class TestSmtDoeDriver(unittest.TestCase):
         pb.setup()
         
     def tearDown(self):
-        pass #os.remove(self.case_recorder_filename)
+        if os.path.exists(self.case_recorder_filename):
+            os.remove(self.case_recorder_filename)
         
-    @unittest.skipIf(SMTDRIVER_DISABLED, 'SMT library is not installed')
+    @unittest.skipIf(SMT_NOT_INSTALLED, 'SMT library is not installed')
     def test_doe_run(self):
         self.pb.run_driver()
+        self.pb.cleanup()
         assert os.path.exists(self.case_recorder_filename)
         reader = CaseReader(self.case_recorder_filename)
         cases = reader.list_cases('root')
