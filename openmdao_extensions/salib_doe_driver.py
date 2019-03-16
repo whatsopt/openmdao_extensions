@@ -7,43 +7,37 @@ from six.moves import range
 
 import numpy as np
 
+from openmdao.api import DOEDriver, ListGenerator
 from openmdao.core.driver import Driver, RecordingDebugging
+from openmdao.drivers.doe_generators import DOEGenerator
+from openmdao.utils.general_utils import warn_deprecation
 
-SALIBDOEDRIVER_DISABLED = False
+SALIB_NOT_INSTALLED = False
 try:
     from SALib.sample import morris as ms
 except ImportError:
-    SALIBDOEDRIVER_DISABLED = True
+    SALIB_NOT_INSTALLED = True
 
-class SalibDoeDriver(Driver):
-    """
-    Baseclass for SALib design-of-experiments Drivers
-    """
+class SalibMorrisDOEGenerator(DOEGenerator):
 
-    def __init__(self, **kwargs):
-        super(SalibDoeDriver, self).__init__()
+    def __init__(self, n_trajs=100, n_levels=4, grid_step_size=2):
+        super(SalibMorrisDOEGenerator, self).__init__()
 
-        if SALIBDOEDRIVER_DISABLED:
-            raise RuntimeError('saLIB library is not installed. \
+        if SALIB_NOT_INSTALLED:
+            raise RuntimeError('SALib library is not installed. \
                                 cf. https://salib.readthedocs.io/en/latest/getting-started.html')
 
-        self.options.declare('n_trajs', types=int, default=100,
-                             desc='number of trajectories to apply morris method')
-        self.options.declare('n_levels', types=int, default=4,
-                             desc='number of grid levels')
-        self.options.declare('grid_step_size', types=int , default=2,
-                             desc='grid jump size')
-        self.options.update(kwargs)
+        # number of trajectories to apply morris method
+        self.n_trajs = n_trajs
+        # number of grid levels
+        self.n_levels = n_levels
+        # grid jump size
+        self.grid_step_size = grid_step_size        
 
-    def _setup_driver(self, problem):
-        super(SalibDoeDriver, self)._setup_driver(problem)
-        n_trajs = self.options['n_trajs']
-        n_levels = self.options['n_levels']
-        grid_jump = self.options['grid_step_size']
-
+    def __call__(self, design_vars, model=None):
         bounds=[]
         names=[]
-        for name, meta in iteritems(self._designvars):
+        for name, meta in iteritems(design_vars):
             size = meta['size']
             meta_low = meta['lower']
             meta_high = meta['upper']
@@ -67,29 +61,46 @@ class SalibDoeDriver(Driver):
         self._pb = {'num_vars': len(names), 
                     'names': names, 
                     'bounds': bounds, 'groups': None}
-        self._cases = ms.sample(self._pb, n_trajs, n_levels, grid_jump)
-
-    def get_cases(self):
-        return self._cases
-
-    def get_salib_problem(self):
-        return self._pb
-
-    def run(self):
-        """
-        Execute the Problem for each generated cases.
-        """
-        model = self._problem.model
-        self.iter_count = 0
-
-        for i in range(self._cases.shape[0]):
+        cases = ms.sample(self._pb, self.n_trajs, self.n_levels, self.grid_step_size)
+        sample = []
+        for i in range(cases.shape[0]):
             j=0
-            for name, meta in iteritems(self._designvars):
+            for name, meta in iteritems(design_vars):
                 size = meta['size']
-                self.set_design_var(name, self._cases[i, j:j + size])
+                sample.append((name, cases[i, j:j + size]))
                 j += size
+            yield sample
 
-            with RecordingDebugging("Morris", self.iter_count, self) as rec:
-                self.iter_count += 1
-                model._solve_nonlinear()
+class SalibMorrisDOEDriver(DOEDriver):
+    """
+    Baseclass for SALib design-of-experiments Drivers
+    """
+
+    def __init__(self, **kwargs):
+        super(SalibMorrisDOEDriver, self).__init__()
+
+        if SALIB_NOT_INSTALLED:
+            raise RuntimeError('SALib library is not installed. \
+                                cf. https://salib.readthedocs.io/en/latest/getting-started.html')
+
+        self.options.declare('n_trajs', types=int, default=100,
+                             desc='number of trajectories to apply morris method')
+        self.options.declare('n_levels', types=int, default=4,
+                             desc='number of grid levels')
+        self.options.declare('grid_step_size', types=int , default=2,
+                             desc='grid jump size')
+        self.options.update(kwargs)
+        n_trajs = self.options['n_trajs']
+        n_levels = self.options['n_levels']
+        grid_step_size = self.options['grid_step_size']
+        self.options['generator'] = SalibMorrisDOEGenerator(n_trajs, n_levels, grid_step_size)
+
+class SalibDoeDriver(SalibMorrisDOEDriver):
+    """
+    Deprecated. Use SalibMorrisDOEDriver.
+    """
+    def __init__(self, **kwargs):
+        super(SalibDoeDriver, self).__init__()
+        warn_deprecation("'SalibDoeDriver' is deprecated"
+                         "; use 'SalibMorrisDOEDriver' instead.")
 
