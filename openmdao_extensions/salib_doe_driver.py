@@ -18,19 +18,15 @@ try:
 except ImportError:
     SALIB_NOT_INSTALLED = True
 
-class SalibMorrisDOEGenerator(DOEGenerator):
+class SalibDOEGenerator(DOEGenerator):
 
-    def __init__(self, n_trajs=2, n_levels=4):
-        super(SalibMorrisDOEGenerator, self).__init__()
-
+    def __init__(self):
         if SALIB_NOT_INSTALLED:
             raise RuntimeError('SALib library is not installed. \
                                 cf. https://salib.readthedocs.io/en/latest/getting-started.html')
-
-        # number of trajectories to apply morris method
-        self.n_trajs = n_trajs
-        # number of grid levels
-        self.n_levels = n_levels
+        self._cases = []
+        self._pb = None
+        self.called = False
 
     def __call__(self, design_vars, model=None):
         bounds=[]
@@ -59,21 +55,46 @@ class SalibMorrisDOEGenerator(DOEGenerator):
         self._pb = {'num_vars': len(names), 
                     'names': names, 
                     'bounds': bounds, 'groups': None}
-        cases = ms.sample(self._pb, self.n_trajs, self.n_levels)
+        self._compute_cases()
+        self.called = True
         sample = []
-        for i in range(cases.shape[0]):
+        for i in range(self._cases.shape[0]):
             j=0
             for name, meta in iteritems(design_vars):
                 size = meta['size']
-                sample.append((name, cases[i, j:j + size]))
+                sample.append((name, self._cases[i, j:j + size]))
                 j += size
             yield sample
+
+    def _compute_cases(self):
+        raise RuntimeError("Have to be implemented in subclass.")
+
+    def get_cases(self):
+        if not called:
+            raise RuntimeError("Have to run the driver before getting cases")
+        return self._cases
+
+    def get_salib_problem(self):
+        if not called:
+            raise RuntimeError("Have to run the driver before getting the SALib problem")
+        return self._pb
+
+class SalibMorrisDOEGenerator(SalibDOEGenerator):
+
+    def __init__(self, n_trajs=2, n_levels=4):
+        super(SalibMorrisDOEGenerator, self).__init__()
+        # number of trajectories to apply morris method
+        self.n_trajs = n_trajs
+        # number of grid levels
+        self.n_levels = n_levels
+
+    def _compute_cases(self):
+        self._cases = ms.sample(self._pb, self.n_trajs, self.n_levels)
 
 class SalibMorrisDOEDriver(DOEDriver):
     """
     Baseclass for SALib design-of-experiments Drivers
     """
-
     def __init__(self, **kwargs):
         super(SalibMorrisDOEDriver, self).__init__()
 
@@ -90,6 +111,13 @@ class SalibMorrisDOEDriver(DOEDriver):
         n_levels = self.options['n_levels']
         self.options['generator'] = SalibMorrisDOEGenerator(n_trajs, n_levels)
 
+    def get_cases(self):
+        return self.options['generator'].get_cases()
+
+    def get_salib_problem(self):
+        return self.options['generator'].get_salib_problem()
+
+
 class SalibDoeDriver(SalibMorrisDOEDriver):
     """
     Deprecated. Use SalibMorrisDOEDriver.
@@ -99,55 +127,3 @@ class SalibDoeDriver(SalibMorrisDOEDriver):
         warn_deprecation("'SalibDoeDriver' is deprecated; "
                          "use 'SalibMorrisDOEDriver' instead.")
 
-# class SalibSobolDOEGenerator(DOEGenerator):
-
-#     def __init__(self, ):
-#         super(SalibSobolDOEGenerator, self).__init__()
-
-#         if SALIB_NOT_INSTALLED:
-#             raise RuntimeError('SALib library is not installed. \
-#                                 cf. https://salib.readthedocs.io/en/latest/getting-started.html')
-
-#         # number of trajectories to apply morris method
-#         self.n_trajs = n_trajs
-#         # number of grid levels
-#         self.n_levels = n_levels
-#         # grid jump size
-#         self.grid_step_size = grid_step_size        
-
-#     def __call__(self, design_vars, model=None):
-#         bounds=[]
-#         names=[]
-#         for name, meta in iteritems(design_vars):
-#             size = meta['size']
-#             meta_low = meta['lower']
-#             meta_high = meta['upper']
-#             for j in range(size):
-#                 if isinstance(meta_low, np.ndarray):
-#                     p_low = meta_low[j]
-#                 else:
-#                     p_low = meta_low
-
-#                 if isinstance(meta_high, np.ndarray):
-#                     p_high = meta_high[j]
-#                 else:
-#                     p_high = meta_high
-                    
-#                 display_name = name.split('.')[-1]
-#                 if size>1:
-#                     display_name += str(j)
-#                 names.append(display_name)
-#                 bounds.append((p_low, p_high))
-
-#         self._pb = {'num_vars': len(names), 
-#                     'names': names, 
-#                     'bounds': bounds, 'groups': None}
-#         cases = ms.sample(self._pb, self.n_trajs, self.n_levels, self.grid_step_size)
-#         sample = []
-#         for i in range(cases.shape[0]):
-#             j=0
-#             for name, meta in iteritems(design_vars):
-#                 size = meta['size']
-#                 sample.append((name, cases[i, j:j + size]))
-#                 j += size
-#             yield sample
