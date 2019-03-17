@@ -29,7 +29,12 @@ class TestSalibDoeDriver(unittest.TestCase):
     @unittest.skipIf(SALIB_NOT_INSTALLED, 'SALib library is not installed')
     def test_salib_doe_driver(self):
         nt = 4
-        self.assert_case_generation(nt, SalibMorrisDOEDriver(n_trajs=nt))
+        driver = SalibMorrisDOEDriver(n_trajs=nt)
+        self.assert_case_generation(nt, driver)
+        salib_cases = driver.get_cases()
+        assert len(salib_cases) > 0
+        salib_pb = driver.get_salib_problem()
+        assert salib_pb
 
     @unittest.skipIf(SALIB_NOT_INSTALLED, 'SALib library is not installed')
     def test_doe_generator(self): 

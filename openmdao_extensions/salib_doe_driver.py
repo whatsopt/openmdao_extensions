@@ -70,12 +70,12 @@ class SalibDOEGenerator(DOEGenerator):
         raise RuntimeError("Have to be implemented in subclass.")
 
     def get_cases(self):
-        if not called:
+        if not self.called:
             raise RuntimeError("Have to run the driver before getting cases")
         return self._cases
 
     def get_salib_problem(self):
-        if not called:
+        if not self.called:
             raise RuntimeError("Have to run the driver before getting the SALib problem")
         return self._pb
 
