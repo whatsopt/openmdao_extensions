@@ -3,11 +3,12 @@ Driver for running model on design of experiments cases using SMT sampling metho
 """
 from __future__ import print_function
 from six import itervalues, iteritems, reraise
-from six.moves import range
-
 import numpy as np
 
+from openmdao.api import DOEDriver, ListGenerator
 from openmdao.core.driver import Driver, RecordingDebugging
+from openmdao.drivers.doe_generators import DOEGenerator
+from openmdao.utils.general_utils import warn_deprecation
 
 SMT_NOT_INSTALLED = False
 try:
@@ -16,33 +17,24 @@ except:
     SMT_NOT_INSTALLED = False
 
 _sampling_methods = {'FullFactorial': FullFactorial, 'LHS': LHS, 'Random': Random}
+class SmtDOEGenerator(DOEGenerator):
 
-class SmtDoeDriver(Driver):
-    """
-    Baseclass for SMT design-of-experiments Drivers 
-    """
-
-    def __init__(self, **kwargs):
-        super(SmtDoeDriver, self).__init__()
+    def __init__(self, sampling_method_name, n_cases, **kwargs):
+        super(SmtDOEGenerator, self).__init__()
 
         if SMT_NOT_INSTALLED:
             raise RuntimeError('SMT library is not installed. cf. https://https://smt.readthedocs.io/en/latest')
 
-        self.options.declare('sampling_method', 'LHS', values=list(_sampling_methods.keys()),
-                             desc='Name of SMT sampling method used to generate doe cases')
-        self.options.declare('n_cases', int,
-                             desc='number of sampling cases to generate')
-        self._method_name = None
-        self._cases = None
-        self.options.update(kwargs)
+        # number of trajectories to apply morris method
+        self.sampling_method_name = sampling_method_name
+        # number of grid levels
+        self.n_cases = n_cases
+        # options
+        self.sampling_method_opts = kwargs
 
-    def _setup_driver(self, problem):
-        super(SmtDoeDriver, self)._setup_driver(problem)
-        self._method_name = self.options['sampling_method']
-        self._n_cases = self.options['n_cases']
-
+    def __call__(self, design_vars, model=None):
         xlimits=[]
-        for name, meta in iteritems(self._designvars):
+        for name, meta in iteritems(design_vars):
             size = meta['size']
             meta_low = meta['lower']
             meta_high = meta['upper']
@@ -59,29 +51,49 @@ class SmtDoeDriver(Driver):
 
                 xlimits.append((p_low, p_high))
 
-        sampling = _sampling_methods[self._method_name](xlimits=np.array(xlimits))
-        self._cases = sampling(self._n_cases)
-        
-    def get_cases(self):
-        return self._cases
-        
-    def run(self):
-        """
-        Execute the Problem for each generated cases.
-        """
-        model = self._problem.model
-        self.iter_count = 0
-        
-        for i in range(self._n_cases):
+        sampling = _sampling_methods[self.sampling_method_name](xlimits=np.array(xlimits), **(self.sampling_method_opts))
+        cases = sampling(self.n_cases)
+        sample = []
+        for i in range(cases.shape[0]):
             j=0
-            for name, meta in iteritems(self._designvars):
+            for name, meta in iteritems(design_vars):
                 size = meta['size']
-                self.set_design_var(name, self._cases[i, j:j + size])
+                sample.append((name, cases[i, j:j + size]))
                 j += size
-            
-            with RecordingDebugging(self._method_name, self.iter_count, self) as rec:
-                self.iter_count += 1
-                model._solve_nonlinear()
+            yield sample
+
+class SmtDOEDriver(DOEDriver):
+    """
+    Baseclass for SMT design-of-experiments Drivers 
+    """
+    def __init__(self, **kwargs):
+        super(SmtDOEDriver, self).__init__()
+
+        if SMT_NOT_INSTALLED:
+            raise RuntimeError('SMT library is not installed. cf. https://https://smt.readthedocs.io/en/latest')
+
+        self.options.declare('sampling_method_name', types=str, default='LHS',
+                             desc='either LHS, FullFactorial or Ramdom')
+        self.options.declare('n_cases', types=int, default=2,
+                             desc='number of sample to generate')
+        self.options.declare('sampling_method_options', types=dict, default={},
+                             desc='options for given SMT sampling method')
+
+        self.options.update(kwargs)
+        name = self.options['sampling_method_name']
+        n_cases = self.options['n_cases']
+        opts = self.options['sampling_method_options']
+        self.options['generator'] = SmtDOEGenerator(sampling_method_name=name, n_cases=n_cases, **opts)
+
+class SmtDoeDriver(SmtDOEDriver):
+    """
+    Deprecated. Use SmtDOEDriver  
+    """
+    def __init__(self, **kwargs):
+        super(SmtDoeDriver, self).__init__(**kwargs)
+        warn_deprecation("'SmtDoeDriver' is deprecated; "
+                         "use 'SmtDOEDriver' instead.")
+
 
 
 

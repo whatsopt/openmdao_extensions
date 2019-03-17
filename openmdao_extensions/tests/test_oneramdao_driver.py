@@ -77,7 +77,7 @@ class TestSegoMoe(unittest.TestCase):
     def tearDown(self):
         pass #os.remove(self.case_recorder_filename)
         
-    @unittest.skip("for now")
+    @unittest.skipIf(ONERASEGO_NOT_INSTALLED, 'SEGOMOE is not installed')
     def test_sellar(self):
         self.pb = pb = Problem(SellarMDA())
         pb.model.add_design_var('x', lower=0, upper=10)
@@ -85,7 +85,7 @@ class TestSegoMoe(unittest.TestCase):
         pb.model.add_objective('obj')
         pb.model.add_constraint('con1', upper=0)
         pb.model.add_constraint('con2', upper=0)
-        pb.driver = SegoMoeDriver()
+        pb.driver = OneraSegoDriver()
         self.case_recorder_filename = 'test_segomoe_driver_sellar.sqlite'
         recorder = SqliteRecorder(self.case_recorder_filename)
         pb.model.add_recorder(recorder)        

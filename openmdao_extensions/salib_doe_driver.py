@@ -95,7 +95,7 @@ class SalibDoeDriver(SalibMorrisDOEDriver):
     Deprecated. Use SalibMorrisDOEDriver.
     """
     def __init__(self, **kwargs):
-        super(SalibDoeDriver, self).__init__()
+        super(SalibDoeDriver, self).__init__(**kwargs)
         warn_deprecation("'SalibDoeDriver' is deprecated; "
                          "use 'SalibMorrisDOEDriver' instead.")
 
