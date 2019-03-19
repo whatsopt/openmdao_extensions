@@ -57,7 +57,11 @@ class OneraSegoDriver(Driver):
 
     def _declare_options(self):
         self.options.declare('optimizer', default='SEGOMOE', values=['SEGOMOE'],
-                             desc='Name of optimizers to use')
+                             desc='Name of optimizer to use')
+        self.options.declare('maxiter', default=100, desc='Maximum number of iteration')
+                             
+        for opt, opt_dict in iteritems(get_sego_options()):
+            self.options.declare(opt, opt_dict['default'], desc=opt_dict['desc'])
         
     def _setup_driver(self, problem):
         super(OneraSegoDriver, self)._setup_driver(problem)
@@ -81,7 +85,6 @@ class OneraSegoDriver(Driver):
             Dictionary to define specific tolerance for ieq constraints
             {'[groupName]': [tol]} Default tol = 1e-5
         """
-
         model = self._problem.model
         path_hs=''
         self.eq_tol=eq_tol
@@ -108,13 +111,11 @@ class OneraSegoDriver(Driver):
         self._initialize_cons()
         
         # Format option dictionary to suit SEGO implementation
-        if 'n_iter' not in self.opt_settings:
-            self.opt_settings.update({'n_iter': 100}) # not part of segomoe options per se but an option of run_optim
         optim_settings = {}
-        for opt, opt_dict in iteritems(get_sego_options()):
-            optim_settings[opt] = opt_dict['default']
+        for opt, _ in iteritems(get_sego_options()):
+            optim_settings[opt] = self.options[opt]
+
         optim_settings.update(self.opt_settings)
-        del optim_settings['n_iter']  
         
         # In OpenMDAO context, obj and constraints are always evaluated together
         optim_settings['grouped_eval']=True
@@ -146,7 +147,7 @@ class OneraSegoDriver(Driver):
                     optim_settings=optim_settings, path_hs=path_hs, comm=self.comm)
 
         # Run the optim
-        exit_flag, x_best, obj_best, dt_opt = sego.run_optim(n_iter=self.opt_settings['n_iter'])
+        exit_flag, x_best, obj_best, dt_opt = sego.run_optim(n_iter=self.options['maxiter'])
 
         # Set optimal parameters
         i = 0
