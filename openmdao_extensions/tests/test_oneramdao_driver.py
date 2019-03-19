@@ -86,6 +86,7 @@ class TestSegoMoe(unittest.TestCase):
         pb.model.add_constraint('con1', upper=0)
         pb.model.add_constraint('con2', upper=0)
         pb.driver = OneraSegoDriver()
+        pb.driver.options['maxiter'] = 10
         self.case_recorder_filename = 'test_segomoe_driver_sellar.sqlite'
         recorder = SqliteRecorder(self.case_recorder_filename)
         pb.model.add_recorder(recorder)        
@@ -104,8 +105,8 @@ class TestSegoMoe(unittest.TestCase):
         pb.model.add_design_var('x2', lower=0, upper=15)
         pb.model.add_objective('obj')
         pb.model.add_constraint('con', upper=0)
-        pb.driver = OneraSegoDriver(optimizer='SEGOMOE')
-        
+        pb.driver = OneraSegoDriver()
+        pb.driver.options['maxiter'] = 10 
         # default model
         n_var=2
         mod_obj = {'type': 'Krig',
@@ -124,7 +125,7 @@ class TestSegoMoe(unittest.TestCase):
         self.pb.run_driver()
         assert os.path.exists(self.case_recorder_filename)
         reader = CaseReader(self.case_recorder_filename)
-        for case_id in reader.system.list_cases():
+        for case_id in reader.list_cases():
             case = reader.get_case(case_id)
             print(case.outputs['obj'])
 
@@ -133,7 +134,7 @@ class TestSegoMoe(unittest.TestCase):
         self.pb = pb = Problem(AckleyMDA())
         pb.model.add_design_var('x', lower=-32.768, upper=32.768)
         pb.model.add_objective('obj')
-        pb.driver = OneraSegoDriver(optimizer='SEGOMOE')
+        pb.driver = OneraSegoDriver()
         
         # default model
         n_var=2
@@ -144,8 +145,8 @@ class TestSegoMoe(unittest.TestCase):
                    'thetaL': [0.1] * n_var,
                    'thetaU': [10.0] * n_var,
                    'normalize': True}
-        pb.driver.options['model_type']= {'obj': mod_obj}
-        
+        pb.driver.opt_settings['model_type']= {'obj': mod_obj}
+        pb.driver.options['maxiter'] = 10        
         self.case_recorder_filename = 'test_segomoe_driver_ackley.sqlite'
         recorder = SqliteRecorder(self.case_recorder_filename)
         pb.model.add_recorder(recorder)        
