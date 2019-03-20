@@ -85,6 +85,9 @@ class SmtDOEDriver(DOEDriver):
         opts = self.options['sampling_method_options']
         self.options['generator'] = SmtDOEGenerator(sampling_method_name=name, n_cases=n_cases, **opts)
 
+    def _set_name(self):
+        self._name = 'SMT_'+self.options['sampling_method_name']
+
 class SmtDoeDriver(SmtDOEDriver):
     """
     Deprecated. Use SmtDOEDriver  
