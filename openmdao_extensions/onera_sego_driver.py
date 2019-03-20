@@ -57,12 +57,9 @@ class OneraSegoDriver(Driver):
 
     def _declare_options(self):
         self.options.declare('optimizer', default='SEGOMOE', values=['SEGOMOE'],
-                             desc='Name of optimizer to use')
-        self.options.declare('maxiter', default=100, desc='Maximum number of iteration')
-                             
-        for opt, opt_dict in iteritems(get_sego_options()):
-            self.options.declare(opt, opt_dict['default'], desc=opt_dict['desc'])
-        
+                             desc='Name of optimizers to use')
+        self.options.declare('maxiter', default=100, desc='Maximum number of iteration')                             
+      
     def _setup_driver(self, problem):
         super(OneraSegoDriver, self)._setup_driver(problem)
         
@@ -112,8 +109,8 @@ class OneraSegoDriver(Driver):
         
         # Format option dictionary to suit SEGO implementation
         optim_settings = {}
-        for opt, _ in iteritems(get_sego_options()):
-            optim_settings[opt] = self.options[opt]
+        for opt, opt_dict in iteritems(get_sego_options()):
+            optim_settings[opt] = opt_dict['default']
 
         optim_settings.update(self.opt_settings)
         

@@ -85,8 +85,7 @@ class TestSegoMoe(unittest.TestCase):
         pb.model.add_objective('obj')
         pb.model.add_constraint('con1', upper=0)
         pb.model.add_constraint('con2', upper=0)
-        pb.driver = OneraSegoDriver()
-        pb.driver.options['maxiter'] = 10
+        pb.driver = OneraSegoDriver(optimizer='SEGOMOE', maxiter=10)
         self.case_recorder_filename = 'test_segomoe_driver_sellar.sqlite'
         recorder = SqliteRecorder(self.case_recorder_filename)
         pb.model.add_recorder(recorder)        
