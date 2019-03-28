@@ -7,7 +7,7 @@ from six.moves import range
 
 import numpy as np
 
-from openmdao.api import DOEDriver, ListGenerator
+from openmdao.api import DOEDriver, ListGenerator, OptionsDictionary
 from openmdao.core.driver import Driver, RecordingDebugging
 from openmdao.drivers.doe_generators import DOEGenerator
 from openmdao.utils.general_utils import warn_deprecation
@@ -91,25 +91,40 @@ class SalibMorrisDOEGenerator(SalibDOEGenerator):
     def _compute_cases(self):
         self._cases = ms.sample(self._pb, self.n_trajs, self.n_levels)
 
-class SalibMorrisDOEDriver(DOEDriver):
+class SalibDOEDriver(DOEDriver):
     """
     Baseclass for SALib design-of-experiments Drivers
     """
     def __init__(self, **kwargs):
-        super(SalibMorrisDOEDriver, self).__init__()
+        super(SalibDOEDriver, self).__init__()
 
         if SALIB_NOT_INSTALLED:
             raise RuntimeError('SALib library is not installed. \
                                 cf. https://salib.readthedocs.io/en/latest/getting-started.html')
 
-        self.options.declare('n_trajs', types=int, default=2,
-                             desc='number of trajectories to apply morris method')
-        self.options.declare('n_levels', types=int, default=4,
-                             desc='number of grid levels')
+        self.options.declare('sa_method_name', default='Morris', values=['Morris', 'Sobol'],
+                             desc='either Morris or Sobol')
+        self.options.declare('sa_doe_options', types=dict, default={},
+                             desc='options for given SMT sensitivity analysis method')
         self.options.update(kwargs)
-        n_trajs = self.options['n_trajs']
-        n_levels = self.options['n_levels']
-        self.options['generator'] = SalibMorrisDOEGenerator(n_trajs, n_levels)
+
+        self.sa_settings = OptionsDictionary()
+        if self.options['sa_method_name'] == 'Morris':
+            self.sa_settings.declare('n_trajs', types=int, default=2,
+                                             desc='number of trajectories to apply morris method')
+            self.sa_settings.declare('n_levels', types=int, default=4,
+                                             desc='number of grid levels')
+            self.sa_settings.update(self.options['sa_doe_options'])
+            n_trajs = self.sa_settings['n_trajs']
+            n_levels = self.sa_settings['n_levels']
+            self.options['generator'] = SalibMorrisDOEGenerator(n_trajs, n_levels)
+        elif self.options['sa_method_name'] == 'Sobol':
+            raise RuntimeError('sa with Sobol method not yet implemented')
+        else:
+            raise RuntimeError("Bad sensitivity analysis method name '{}'".format(self.options['sa_method_name']))
+
+    def _set_name(self):
+        self._name = 'SALib_DOE_'+self.options['sa_method_name']
 
     def get_cases(self):
         return self.options['generator'].get_cases()
@@ -117,13 +132,4 @@ class SalibMorrisDOEDriver(DOEDriver):
     def get_salib_problem(self):
         return self.options['generator'].get_salib_problem()
 
-
-class SalibDoeDriver(SalibMorrisDOEDriver):
-    """
-    Deprecated. Use SalibMorrisDOEDriver.
-    """
-    def __init__(self, **kwargs):
-        super(SalibDoeDriver, self).__init__(**kwargs)
-        warn_deprecation("'SalibDoeDriver' is deprecated; "
-                         "use 'SalibMorrisDOEDriver' instead.")
 

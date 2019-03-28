@@ -4,7 +4,7 @@ from six import itervalues
 import tempfile
 from openmdao.api import IndepVarComp, Problem, Group, SqliteRecorder, CaseReader, DOEDriver, FullFactorialGenerator
 from openmdao.test_suite.components.sellar import SellarProblem
-from openmdao_extensions.salib_doe_driver import SalibMorrisDOEDriver, SalibMorrisDOEGenerator, SalibDoeDriver
+from openmdao_extensions.salib_doe_driver import SalibMorrisDOEGenerator, SalibDOEDriver
 from openmdao_extensions.salib_doe_driver import SALIB_NOT_INSTALLED
 from openmdao.utils.assert_utils import assert_warning
 class TestSalibDoeDriver(unittest.TestCase):
@@ -29,7 +29,8 @@ class TestSalibDoeDriver(unittest.TestCase):
     @unittest.skipIf(SALIB_NOT_INSTALLED, 'SALib library is not installed')
     def test_salib_doe_driver(self):
         nt = 4
-        driver = SalibMorrisDOEDriver(n_trajs=nt)
+        driver = SalibDOEDriver(sa_method_name='Morris',
+                                sa_doe_options={'n_trajs':nt})
         self.assert_case_generation(nt, driver)
         salib_cases = driver.get_cases()
         assert len(salib_cases) > 0
@@ -40,13 +41,6 @@ class TestSalibDoeDriver(unittest.TestCase):
     def test_doe_generator(self): 
         nt = 5
         self.assert_case_generation(nt, DOEDriver(SalibMorrisDOEGenerator(n_trajs=nt)))
-
-    @unittest.skipIf(SALIB_NOT_INSTALLED, 'SALib library is not installed')
-    def test_deprecated(self):
-        msg = "'SalibDoeDriver' is deprecated; " \
-                "use 'SalibMorrisDOEDriver' instead."
-        with assert_warning(DeprecationWarning, msg):
-            SalibDoeDriver()
 
 if __name__ == '__main__':
     unittest.main()
