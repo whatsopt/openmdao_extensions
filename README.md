@@ -15,7 +15,7 @@ pip install git+https://github.com/OneraHub/openmdao_extensions.git
 ## Compatibility
 
 * 0.1 : OpenMDAO > 2.2, <= 2.6, SALib 1.1.3, SMT 0.2
-* 0.2 : OpenMDAO > 2.2, <= 2.6, SALib 1.3.3, SMT 0.2
+* >=0.2 : OpenMDAO > 2.2, <= 2.6, SALib 1.3.3, SMT 0.2.2
 
 ## License
 
