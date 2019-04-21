@@ -15,6 +15,8 @@ from openmdao.utils.general_utils import warn_deprecation
 SALIB_NOT_INSTALLED = False
 try:
     from SALib.sample import morris as ms
+    from SALib.sample import saltelli
+    from SALib.analyze import sobol
 except ImportError:
     SALIB_NOT_INSTALLED = True
 
@@ -91,6 +93,18 @@ class SalibMorrisDOEGenerator(SalibDOEGenerator):
     def _compute_cases(self):
         self._cases = ms.sample(self._pb, self.n_trajs, self.n_levels)
 
+class SalibSobolDOEGenerator(SalibDOEGenerator):
+
+    def __init__(self, n_samples=2, calc_second_order=True):
+        super(SalibSobolDOEGenerator, self).__init__()
+        # number of trajectories to apply morris method
+        self.n_samples = n_samples
+        # whether calculing second order indices
+        self.calc_second_order = calc_second_order
+
+    def _compute_cases(self):
+        self._cases = saltelli.sample(self._pb, self.n_samples, self.calc_second_order)
+
 class SalibDOEDriver(DOEDriver):
     """
     Baseclass for SALib design-of-experiments Drivers
@@ -119,7 +133,14 @@ class SalibDOEDriver(DOEDriver):
             n_levels = self.sa_settings['n_levels']
             self.options['generator'] = SalibMorrisDOEGenerator(n_trajs, n_levels)
         elif self.options['sa_method_name'] == 'Sobol':
-            raise RuntimeError('sa with Sobol method not yet implemented')
+            self.sa_settings.declare('n_samples', types=int, default=2,
+                                     desc='number of samples to generate')
+            self.sa_settings.declare('calc_second_order', types=bool, default=True,
+                                     desc='calculate second-order sensitivities ')
+            self.sa_settings.update(self.options['sa_doe_options'])
+            n_samples = self.sa_settings['n_samples']
+            calc_snd = self.sa_settings['calc_second_order']
+            self.options['generator'] = SalibSobolDOEGenerator(n_samples, calc_snd)
         else:
             raise RuntimeError("Bad sensitivity analysis method name '{}'".format(self.options['sa_method_name']))
 
