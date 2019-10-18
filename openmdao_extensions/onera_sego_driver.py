@@ -1,10 +1,10 @@
 from __future__ import print_function
 import numpy as np
 from six import iteritems
+import traceback
 
 from openmdao.core.driver import Driver, RecordingDebugging
 from openmdao.core.analysis_error import AnalysisError
-from openmdao.recorders.recording_iteration_stack import Recording
 
 ONERASEGO_NOT_INSTALLED = False
 try:
@@ -13,6 +13,7 @@ try:
     from segomoe.sego import Sego
 except ImportError:
     ONERASEGO_NOT_INSTALLED = True
+
 
 def to_list(l, size):
     if not (isinstance(l, np.ndarray) or isinstance(l, list)):
@@ -24,6 +25,7 @@ def to_list(l, size):
         return [l[0]] * size
     else:
         return l
+
 
 class OneraSegoDriver(Driver):
     """
@@ -37,35 +39,39 @@ class OneraSegoDriver(Driver):
         super(OneraSegoDriver, self).__init__(**kwargs)
 
         if ONERASEGO_NOT_INSTALLED:
-            raise RuntimeError('Onera SEGOMOE library is not installed.')
+            raise RuntimeError("Onera SEGOMOE library is not installed.")
 
         # What we support
-        self.supports['inequality_constraints'] = True
-        self.supports['equality_constraints'] = True
-        self.supports['two_sided_constraints'] = True
-        self.supports['linear_constraints'] = True
+        self.supports["inequality_constraints"] = True
+        self.supports["equality_constraints"] = True
+        self.supports["two_sided_constraints"] = True
+        self.supports["linear_constraints"] = True
 
         # What we don't support
-        self.supports['multiple_objectives'] = False
-        self.supports['active_set'] = False
-        self.supports['integer_design_vars'] = False
-        self.supports['simultaneous_derivatives'] = False
-        self.supports['total_jac_sparsity'] = False
-        self.supports['gradients'] = False
-        
+        self.supports["multiple_objectives"] = False
+        self.supports["active_set"] = False
+        self.supports["integer_design_vars"] = False
+        self.supports["simultaneous_derivatives"] = False
+        self.supports["total_jac_sparsity"] = False
+        self.supports["gradients"] = False
+
         self.opt_settings = {}
 
     def _declare_options(self):
-        self.options.declare('optimizer', default='SEGOMOE', values=['SEGOMOE'],
-                             desc='Name of optimizers to use')
-        self.options.declare('maxiter', default=100, desc='Maximum number of iteration')                             
-      
+        self.options.declare(
+            "optimizer",
+            default="SEGOMOE",
+            values=["SEGOMOE"],
+            desc="Name of optimizers to use",
+        )
+        self.options.declare("maxiter", default=100, desc="Maximum number of iteration")
+
     def _setup_driver(self, problem):
         super(OneraSegoDriver, self)._setup_driver(problem)
-        
+
         self.comm = None
 
-    def run(self, path_hs='', eq_tol={}, ieq_tol={}):
+    def run(self, path_hs="", eq_tol={}, ieq_tol={}):
         """
         Optimize the problem using SEGOMOE.
 
@@ -83,18 +89,20 @@ class OneraSegoDriver(Driver):
             {'[groupName]': [tol]} Default tol = 1e-5
         """
         model = self._problem.model
-        path_hs=''
-        self.eq_tol=eq_tol
-        self.ieq_tol=ieq_tol
+        path_hs = ""
+        self.eq_tol = eq_tol
+        self.ieq_tol = ieq_tol
         self.iter_count = 0
-        self.name = optimizer = "onera_optimizer_segomoe"
+        self.name = "onera_optimizer_segomoe"
         self._sego_vars = []
         self._sego_cons = []
         self._map_con = {}
         self._n_mapped_con = 0
-        
+
         # Initial Run
-        with RecordingDebugging(self.options['optimizer'], self.iter_count, self) as rec:
+        with RecordingDebugging(
+            self.options["optimizer"], self.iter_count, self
+        ) as rec:
             # Initial Run
             model._solve_nonlinear()
             rec.abs = 0.0
@@ -103,80 +111,101 @@ class OneraSegoDriver(Driver):
 
         # Format design variables to suit segomoe implementation
         self._initialize_vars()
-        
+
         # Format constraints to suit segomoe implementation
         self._initialize_cons()
-        
+
         # Format option dictionary to suit SEGO implementation
         optim_settings = {}
         for opt, opt_dict in iteritems(get_sego_options()):
-            optim_settings[opt] = opt_dict['default']
+            optim_settings[opt] = opt_dict["default"]
 
         optim_settings.update(self.opt_settings)
-        
+
         # In OpenMDAO context, obj and constraints are always evaluated together
-        optim_settings['grouped_eval']=True
+        optim_settings["grouped_eval"] = True
 
         # default model
-        mod_obj = {'corr': 'squared_exponential',
-                   'regr': 'constant',
-                   'normalize': True}
-        
-        dim=0
+        mod_obj = {"corr": "squared_exponential", "regr": "constant", "normalize": True}
+
+        dim = 0
         for name, meta in iteritems(self._designvars):
-            dim += meta['size']
+            dim += meta["size"]
         print("Designvars dimension: ", dim)
         if dim > 10:
             n_components = 3
-            mod_obj['n_components'] = n_components
-            mod_obj['type'] = 'KrigKPLS' if dim > 20 else 'KrigKPLSK'
+            mod_obj["n_components"] = n_components
+            mod_obj["type"] = "KrigKPLS" if dim > 20 else "KrigKPLSK"
         else:
             n_components = dim
-            mod_obj['type'] = 'Krig'
-        mod_obj['theta0'] = [1.0] * n_components
-        mod_obj['thetaL'] = [0.1] * n_components
-        mod_obj['thetaU'] = [10.0] * n_components
+            mod_obj["type"] = "Krig"
+        mod_obj["theta0"] = [1.0] * n_components
+        mod_obj["thetaL"] = [0.1] * n_components
+        mod_obj["thetaU"] = [10.0] * n_components
 
-        optim_settings['model_type']= {'obj': mod_obj, 'con': mod_obj}
+        optim_settings["model_type"] = {"obj": mod_obj, "con": mod_obj}
 
         # Instanciate a SEGO optimizer
-        sego = Sego(self._objfunc, self._sego_vars, const=self._sego_cons, \
-                    optim_settings=optim_settings, path_hs=path_hs, comm=self.comm)
+        sego = Sego(
+            self._objfunc,
+            self._sego_vars,
+            const=self._sego_cons,
+            optim_settings=optim_settings,
+            path_hs=path_hs,
+            comm=self.comm,
+        )
 
         # Run the optim
-        exit_flag, x_best, obj_best, dt_opt = sego.run_optim(n_iter=self.options['maxiter'])
+        exit_flag, x_best, obj_best, dt_opt = sego.run_optim(
+            n_iter=self.options["maxiter"]
+        )
 
         # Set optimal parameters
         i = 0
         for name, meta in iteritems(self._designvars):
-            size = meta['size']
-            self.set_design_var(name, x_best[i: i + size])
+            size = meta["size"]
+            self.set_design_var(name, x_best[i : i + size])
             i += size
 
-        with RecordingDebugging(self.options['optimizer'], self.iter_count, self) as rec:
+        with RecordingDebugging(
+            self.options["optimizer"], self.iter_count, self
+        ) as rec:
             model._solve_nonlinear()
             rec.abs = 0.0
             rec.rel = 0.0
         self.iter_count += 1
 
-        self.exit_flag = (exit_flag == ExitStatus.valid_sol) or \
-                         (exit_flag == ExitStatus.solution_reached)
-                         
+        self.exit_flag = (exit_flag == ExitStatus.valid_sol) or (
+            exit_flag == ExitStatus.solution_reached
+        )
+
         return self.exit_flag
 
     def _initialize_vars(self):
         vars = []
         param_meta = self._designvars
-        param_vals = self.get_design_var_values()
         for name, meta in iteritems(param_meta):
-            if meta['size'] > 1:
-                lower = meta['lower'] if np.isscalar(meta['lower']) else meta['lower'][i]
-                upper = meta['upper'] if np.isscalar(meta['lower']) else meta['upper'][i]
-                vars += [{'name': name + '_' + str(i),
-                         'lb': lower,
-                         'ub': upper} for i in range(meta['size'])]
+            if meta["size"] > 1:
+                if np.isscalar(meta["lower"]):
+                    vars += [
+                        {
+                            "name": name + "_" + str(i),
+                            "lb": meta["lower"],
+                            "ub": meta["upper"],
+                        }
+                        for i in range(meta["size"])
+                    ]
+                else:
+                    vars += [
+                        {
+                            "name": name + "_" + str(i),
+                            "lb": meta["lower"][i],
+                            "ub": meta["lower"][i],
+                        }
+                        for i in range(meta["size"])
+                    ]
             else:
-                vars += [{'name': name, 'lb': meta['lower'], 'ub': meta['upper']}]
+                vars += [{"name": name, "lb": meta["lower"], "ub": meta["upper"]}]
         self._sego_vars = vars
 
     def _initialize_cons(self):
@@ -200,19 +229,20 @@ class OneraSegoDriver(Driver):
         eval_index = 1
 
         con_meta = self._cons
-        eq_cons = {name: con for name, con in iteritems(con_meta) if con['equals']}
-        ieq_cons = {name: con for name, con in iteritems(con_meta) if not con['equals']}
-        
+        eq_cons = {name: con for name, con in iteritems(con_meta) if con["equals"]}
+        ieq_cons = {name: con for name, con in iteritems(con_meta) if not con["equals"]}
+
         # Equality constraints
         for name in eq_cons.keys():
             meta = con_meta[name]
-            size = meta['size']
-            equals = to_list(meta['equals'], size)
+            size = meta["size"]
+            equals = to_list(meta["equals"], size)
             tol = to_list(eq_tol[name] if name in self.eq_tol else 1e-4, size)
 
             for k in xrange(size):
-                add_con(Constraint('=', equals[k], name=(name + '_' + str(k)), \
-                                   tol=tol[k]))
+                add_con(
+                    Constraint("=", equals[k], name=(name + "_" + str(k)), tol=tol[k])
+                )
             # Map eq constraints - range to allow double-sided constraint support
             self._map_con[name] = range(eval_index, eval_index + size)
             eval_index += size
@@ -221,10 +251,10 @@ class OneraSegoDriver(Driver):
         # Inequality constraints
         for name in ieq_cons.keys():
             meta = con_meta[name]
-            size = meta['size']
+            size = meta["size"]
             # Bounds - double sided is supported
-            lower = to_list(meta['lower'], size)
-            upper = to_list(meta['upper'], size)
+            lower = to_list(meta["lower"], size)
+            upper = to_list(meta["upper"], size)
             tol = to_list(ieq_tol[name] if name in self.ieq_tol else 1e-4, size)
             # Index list is updated for each real constraint to handle double sided constraints
             index_list = []
@@ -232,31 +262,42 @@ class OneraSegoDriver(Driver):
             for k in range(size):
                 if lower[k] is None or lower[k] < -1e29:
                     # g(x) < upper
-                    add_con(Constraint('<', upper[k], name=(name + '_' + str(k)), \
-                                       tol=tol[k]))
+                    add_con(
+                        Constraint(
+                            "<", upper[k], name=(name + "_" + str(k)), tol=tol[k]
+                        )
+                    )
                     index_list.append(eval_index)
                     eval_index += 1
                     self._n_mapped_con += 1
                 elif upper[k] is None or upper[k] > 1e29:
                     # g(x) > lower
-                    add_con(Constraint('>', lower[k], name=(name + '_' + str(k)), \
-                                       tol=tol[k]))
+                    add_con(
+                        Constraint(
+                            ">", lower[k], name=(name + "_" + str(k)), tol=tol[k]
+                        )
+                    )
                     index_list.append(eval_index)
                     eval_index += 1
                     self._n_mapped_con += 1
                 else:
                     # lower < g(x) < upper
                     # Split is currently required for sego
-                    add_con(Constraint('<', upper[k], name=(name + '_' + str(k) + '<'), \
-                                       tol=tol[k]))
-                    add_con(Constraint('>', lower[k], name=(name + '_' + str(k) + '>'), \
-                                       tol=tol[k]))
+                    add_con(
+                        Constraint(
+                            "<", upper[k], name=(name + "_" + str(k) + "<"), tol=tol[k]
+                        )
+                    )
+                    add_con(
+                        Constraint(
+                            ">", lower[k], name=(name + "_" + str(k) + ">"), tol=tol[k]
+                        )
+                    )
                     index_list.append([eval_index, eval_index + 1])
                     eval_index += 2
                     self._n_mapped_con += 2
             self._map_con[name] = index_list
-            
-                
+
     def _objfunc(self, point):
         """
         Function that evaluates and returns the objective function and the
@@ -284,17 +325,19 @@ class OneraSegoDriver(Driver):
             i = 0
 
             for name, meta in iteritems(self._designvars):
-                size = meta['size']
-                self.set_design_var(name, point[i: i + size])
+                size = meta["size"]
+                self.set_design_var(name, point[i : i + size])
                 i += size
 
             # Execute the model
-            with RecordingDebugging(self.options['optimizer'], self.iter_count, self) as rec:
+            with RecordingDebugging(
+                self.options["optimizer"], self.iter_count, self
+            ) as rec:
                 self.iter_count += 1
                 try:
                     model._solve_nonlinear()
 
-                    # Let the optimizer try to handle the error
+                # Let the optimizer try to handle the error
                 except AnalysisError:
                     model._clear_iprint()
                     fail = True
