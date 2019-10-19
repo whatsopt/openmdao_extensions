@@ -1,6 +1,6 @@
 import os
 import unittest
-from openmdao.api import IndepVarComp, Problem, Group, SqliteRecorder, CaseReader
+from openmdao.api import IndepVarComp, Problem, SqliteRecorder, CaseReader
 from openmdao.test_suite.components.sellar import SellarProblem
 from openmdao_extensions.smt_doe_driver import SmtDOEDriver, SmtDoeDriver
 from openmdao_extensions.smt_doe_driver import SMT_NOT_INSTALLED
