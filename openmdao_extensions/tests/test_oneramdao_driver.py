@@ -99,7 +99,7 @@ class TestSegoMoe(unittest.TestCase):
         pb.model.add_recorder(recorder)
         pb.setup()
         self.pb.run_driver()
-        assert os.path.exists(self.case_recorder_filename)
+        self.assertTrue(os.path.exists(self.case_recorder_filename))
         reader = CaseReader(self.case_recorder_filename)
         for case_id in reader.list_cases():
             case = reader.get_case(case_id)
@@ -112,39 +112,20 @@ class TestSegoMoe(unittest.TestCase):
         pb.model.add_design_var("x2", lower=0, upper=15)
         pb.model.add_objective("obj")
         pb.model.add_constraint("con", upper=0)
-        pb.driver = OneraSegoDriver()
-        pb.driver.options["maxiter"] = 10
-        # default model
-        n_var = 2
-        mod_obj = {
-            "type": "Krig",
-            "corr": "squared_exponential",
-            "regr": "constant",
-            "theta0": [1.0] * n_var,
-            "thetaL": [0.1] * n_var,
-            "thetaU": [10.0] * n_var,
-            "normalize": True,
-        }
-        pb.driver.opt_settings["model_type"] = {"obj": mod_obj, "con": mod_obj}
-
         self.case_recorder_filename = "test_segomoe_driver_branin.sqlite"
-        recorder = SqliteRecorder(self.case_recorder_filename)
-        pb.model.add_recorder(recorder)
-        pb.setup()
-        self.pb.run_driver()
-        assert os.path.exists(self.case_recorder_filename)
-        reader = CaseReader(self.case_recorder_filename)
-        for case_id in reader.list_cases():
-            case = reader.get_case(case_id)
-            print(case.outputs["obj"])
+        self._check_recorder_file(pb, cstr=True, filename=self.case_recorder_filename)
 
-    @unittest.skipIf(ONERASEGO_NOT_INSTALLED, "SEGOME is not installed")
+    @unittest.skipIf(ONERASEGO_NOT_INSTALLED, "SEGOMOE is not installed")
     def test_ackley(self):
         self.pb = pb = Problem(AckleyMDA())
         pb.model.add_design_var("x", lower=-32.768, upper=32.768)
         pb.model.add_objective("obj")
-        pb.driver = OneraSegoDriver()
+        self.case_recorder_filename = "test_segomoe_driver_ackley.sqlite"
+        self._check_recorder_file(pb, cstr=False, filename=self.case_recorder_filename)
 
+    def _check_recorder_file(self, pb, cstr, filename):
+        pb.driver = OneraSegoDriver()
+        pb.driver.options["maxiter"] = 10
         # default model
         n_var = 2
         mod_obj = {
@@ -156,14 +137,15 @@ class TestSegoMoe(unittest.TestCase):
             "thetaU": [10.0] * n_var,
             "normalize": True,
         }
-        pb.driver.opt_settings["model_type"] = {"obj": mod_obj}
-        pb.driver.options["maxiter"] = 10
-        self.case_recorder_filename = "test_segomoe_driver_ackley.sqlite"
+        model_type = {"obj": mod_obj}
+        if cstr:
+            model_type["con"] = mod_obj
+        pb.driver.opt_settings["model_type"] = model_type
         recorder = SqliteRecorder(self.case_recorder_filename)
         pb.model.add_recorder(recorder)
         pb.setup()
         self.pb.run_driver()
-        assert os.path.exists(self.case_recorder_filename)
+        self.assertTrue(os.path.exists(self.case_recorder_filename))
         reader = CaseReader(self.case_recorder_filename)
         for case_id in reader.list_cases():
             case = reader.get_case(case_id)

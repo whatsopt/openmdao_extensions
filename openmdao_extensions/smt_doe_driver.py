@@ -69,7 +69,7 @@ class SmtDOEGenerator(DOEGenerator):
 
 class SmtDOEDriver(DOEDriver):
     """
-    Baseclass for SMT design-of-experiments Drivers 
+    Baseclass for SMT design-of-experiments Drivers.
     """
 
     def __init__(self, **kwargs):
