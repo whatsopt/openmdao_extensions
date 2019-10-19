@@ -15,6 +15,10 @@ install:
   - pip install --upgrade pip
   - pip install smt
   - pip install salib
+  - pip install pytest
   - pip install -e .
   - python --version
   - pip list
+
+script:
+  - pytest

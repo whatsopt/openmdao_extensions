@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/relf/openmdao_extensions.svg?branch=master)](https://travis-ci.org/relf/openmdao_extensions)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/OneraHub/openmdao_extensions.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/OneraHub/openmdao_extensions/context:python)
+
 # OpenMDAO Extensions
 
 Set of specialized classes to handle specific methods using OpenMDAO framework.
@@ -9,7 +12,7 @@ Set of specialized classes to handle specific methods using OpenMDAO framework.
 
 ## Installation
 ```
-pip install git+https://github.com/OneraHub/openmdao_extensions.git
+pip install openmdao-extensions
 ```
 
 ## License
