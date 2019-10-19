@@ -1,7 +1,6 @@
 import os
 import unittest
 from six import itervalues
-import tempfile
 from openmdao.api import (
     IndepVarComp,
     Problem,
@@ -9,16 +8,15 @@ from openmdao.api import (
     SqliteRecorder,
     CaseReader,
     DOEDriver,
-    FullFactorialGenerator,
 )
 from openmdao.test_suite.components.sellar import SellarProblem
-from openmdao_extensions.salib_doe_driver import SalibMorrisDOEGenerator, SalibDOEDriver
+from openmdao_extensions.salib_doe_driver import SalibDOEDriver
 from openmdao_extensions.salib_doe_driver import SALIB_NOT_INSTALLED
-from openmdao.utils.assert_utils import assert_warning
 
 
 class TestSalibDoeDriver(unittest.TestCase):
-    def run_driver(self, name, driver):
+    @staticmethod
+    def run_driver(name, driver):
         pb = SellarProblem()
         case_recorder_filename = "test_salib_doe_{}.sqlite".format(name)
         recorder = SqliteRecorder(case_recorder_filename)
@@ -30,9 +28,11 @@ class TestSalibDoeDriver(unittest.TestCase):
         return pb, case_recorder_filename
 
     def assert_morris_case_generation(self, nt, driver):
-        pb, case_recorder_filename = self.run_driver("morris" + str(nt), driver)
+        pb, case_recorder_filename = TestSalibDoeDriver.run_driver(
+            "morris" + str(nt), driver
+        )
 
-        assert os.path.exists(case_recorder_filename)
+        self.assertTrue(os.path.exists(case_recorder_filename))
         reader = CaseReader(case_recorder_filename)
         cases = reader.list_cases("driver")
         os.remove(case_recorder_filename)
@@ -45,9 +45,9 @@ class TestSalibDoeDriver(unittest.TestCase):
         driver = SalibDOEDriver(sa_method_name="Morris", sa_doe_options={"n_trajs": nt})
         self.assert_morris_case_generation(nt, driver)
         salib_cases = driver.get_cases()
-        assert len(salib_cases) > 0
+        self.assertTrue(len(salib_cases) > 0)
         salib_pb = driver.get_salib_problem()
-        assert salib_pb
+        self.assertTrue(salib_pb)
 
     @unittest.skipIf(SALIB_NOT_INSTALLED, "SALib library is not installed")
     def test_salib_sobol_driver(self):
@@ -56,11 +56,11 @@ class TestSalibDoeDriver(unittest.TestCase):
             sa_method_name="Sobol",
             sa_doe_options={"n_samples": ns, "calc_second_order": True},
         )
-        self.run_driver("sobol", driver)
+        TestSalibDoeDriver.run_driver("sobol", driver)
         salib_cases = driver.get_cases()
-        assert len(salib_cases) > 0
+        self.assertTrue(len(salib_cases) > 0)
         salib_pb = driver.get_salib_problem()
-        assert salib_pb
+        self.assertTrue(salib_pb)
 
     # @unittest.skipIf(SALIB_NOT_INSTALLED, 'SALib library is not installed')
     # def test_doe_generator(self):

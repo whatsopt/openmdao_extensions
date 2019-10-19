@@ -163,7 +163,7 @@ class TestSegoMoe(unittest.TestCase):
         pb.model.add_recorder(recorder)
         pb.setup()
         self.pb.run_driver()
-        assert os.path.exists(self.case_recorder_filename)
+        self.assertTrue(os.path.exists(self.case_recorder_filename))
         reader = CaseReader(self.case_recorder_filename)
         for case_id in reader.list_cases():
             case = reader.get_case(case_id)
