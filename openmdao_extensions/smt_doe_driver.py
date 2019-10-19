@@ -110,7 +110,7 @@ class SmtDOEDriver(DOEDriver):
 
 class SmtDoeDriver(SmtDOEDriver):
     """
-    Deprecated. Use SmtDOEDriver  
+    Deprecated. Use SmtDOEDriver.
     """
 
     def __init__(self, **kwargs):

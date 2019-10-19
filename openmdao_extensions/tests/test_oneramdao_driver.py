@@ -10,11 +10,7 @@ from openmdao.api import (
     CaseReader,
     ExplicitComponent,
 )
-from openmdao.test_suite.components.sellar_feature import (
-    SellarDis1,
-    SellarDis2,
-    SellarMDA,
-)
+from openmdao.test_suite.components.sellar_feature import SellarDis1, SellarMDA
 from openmdao_extensions.onera_sego_driver import OneraSegoDriver
 from openmdao_extensions.onera_sego_driver import ONERASEGO_NOT_INSTALLED
 
