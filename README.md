@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/relf/openmdao_extensions.svg?branch=master)](https://travis-ci.org/relf/openmdao_extensions)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/267f14cbf02a4056bb30ff60a92d6ef2)](https://www.codacy.com/manual/relf/openmdao_extensions?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=OneraHub/openmdao_extensions&amp;utm_campaign=Badge_Grade)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 # OpenMDAO Extensions
 
