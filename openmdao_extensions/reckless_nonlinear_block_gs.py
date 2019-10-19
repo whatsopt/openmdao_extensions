@@ -6,6 +6,7 @@ from openmdao.core.analysis_error import AnalysisError
 from openmdao.recorders.recording_iteration_stack import Recording
 from openmdao.api import NonlinearBlockGS
 
+
 class RecklessNonlinearBlockGS(NonlinearBlockGS):
     """
     Extends Nonlinear block Gauss-Seidel solver with convergence variables options.
@@ -25,7 +26,7 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
         value is used for all specified variables. Only used if _convrg_vars is set.
     """
 
-    SOLVER = 'NL: RNLBGS'
+    SOLVER = "NL: RNLBGS"
 
     def __init__(self, **kwargs):
         """
@@ -46,11 +47,19 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
         Declare options before kwargs are processed in the init method.
         """
         super(RecklessNonlinearBlockGS, self)._declare_options()
-        self.options.declare('convrg_vars', types=list, default=[],
-                             desc='list of variables (names) used by relative error criterium.')
-        self.options.declare('convrg_rtols', types=list, default=[],
-                             desc='list of relative error tolerances corresponding to each'
-                             ' variable specified in convrg_vars option (rtol is used otherwise)')
+        self.options.declare(
+            "convrg_vars",
+            types=list,
+            default=[],
+            desc="list of variables (names) used by relative error criterium.",
+        )
+        self.options.declare(
+            "convrg_rtols",
+            types=list,
+            default=[],
+            desc="list of relative error tolerances corresponding to each"
+            " variable specified in convrg_vars option (rtol is used otherwise)",
+        )
 
     def _solve(self):
         """
@@ -58,9 +67,9 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
 
         Overrides opendmao/solvers/solver.py to implement _is_rtol_converged
         """
-        maxiter = self.options['maxiter']
-        atol = self.options['atol']
-        iprint = self.options['iprint']
+        maxiter = self.options["maxiter"]
+        atol = self.options["atol"]
+        iprint = self.options["iprint"]
 
         self._mpi_print_header()
 
@@ -89,23 +98,29 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             self._mpi_print(self._iter_count, norm, norm / norm0)
             is_rtol_converged = self._is_rtol_converged(norm, norm0)
 
-        if self._system.comm.rank == 0 or os.environ.get('USE_PROC_FILES'):
+        if self._system.comm.rank == 0 or os.environ.get("USE_PROC_FILES"):
             prefix = self._solver_info.prefix + self.SOLVER
             is_rtol_converged = self._is_rtol_converged(norm, norm0)
-            if np.isinf(norm) or np.isnan(norm) or (norm > atol and not is_rtol_converged):
+            if (
+                np.isinf(norm)
+                or np.isnan(norm)
+                or (norm > atol and not is_rtol_converged)
+            ):
                 if iprint > -1:
-                    msg = ' Failed to Converge in {} iterations'.format(self._iter_count)
+                    msg = " Failed to Converge in {} iterations".format(
+                        self._iter_count
+                    )
                     print(prefix + msg)
 
                 # Raise AnalysisError if requested.
-                if self.options['err_on_maxiter']:
+                if self.options["err_on_maxiter"]:
                     msg = "Solver '{}' on system '{}' failed to converge."
                     raise AnalysisError(msg.format(self.SOLVER, self._system.pathname))
 
             elif iprint == 1:
-                print(prefix + ' Converged in {} iterations'.format(self._iter_count))
+                print(prefix + " Converged in {} iterations".format(self._iter_count))
             elif iprint == 2:
-                print(prefix + ' Converged')
+                print(prefix + " Converged")
 
     def _iter_initialize(self):
         """
@@ -118,16 +133,17 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
         float
             error at the first iteration.
         """
-        self._convrg_vars = self.options['convrg_vars']
-        if self._convrg_vars and not self.options['convrg_rtols']:
-            rtol = self.options['rtol']
+        self._convrg_vars = self.options["convrg_vars"]
+        if self._convrg_vars and not self.options["convrg_rtols"]:
+            rtol = self.options["rtol"]
             self._convrg_rtols = rtol * np.ones(len(self._convrg_vars))
         else:
-            self._convrg_rtols = self.options['convrg_rtols']
+            self._convrg_rtols = self.options["convrg_rtols"]
             if len(self._convrg_rtols) != len(self._convrg_vars):
-                raise RuntimeError('Convergence rtols bad size : should be {}, '
-                                   'found {}.'.format(len(self._convrg_vars),
-                                                      len(self._convrg_rtols)))
+                raise RuntimeError(
+                    "Convergence rtols bad size : should be {}, "
+                    "found {}.".format(len(self._convrg_vars), len(self._convrg_rtols))
+                )
 
         return super(RecklessNonlinearBlockGS, self)._iter_initialize()
 
@@ -157,7 +173,7 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
                 rerrs[i] = np.linalg.norm(residual) / np.linalg.norm(outputs[i])
             is_rtol_converged = (rerrs < self._convrg_rtols).all()
         else:
-            is_rtol_converged = norm / norm0 < self.options['rtol']
+            is_rtol_converged = norm / norm0 < self.options["rtol"]
         return is_rtol_converged
 
     def _iter_get_norm(self):
@@ -177,4 +193,3 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
         else:
             norm = super(RecklessNonlinearBlockGS, self)._iter_get_norm()
         return norm
-

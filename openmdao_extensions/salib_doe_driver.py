@@ -182,4 +182,3 @@ class SalibDOEDriver(DOEDriver):
 
     def get_salib_problem(self):
         return self.options["generator"].get_salib_problem()
-
