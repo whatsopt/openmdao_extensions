@@ -51,7 +51,7 @@ class TestSalibDoeDriver(unittest.TestCase):
 
     @unittest.skipIf(SALIB_NOT_INSTALLED, "SALib library is not installed")
     def test_salib_sobol_driver(self):
-        ns = 2
+        ns = 100
         driver = SalibDOEDriver(
             sa_method_name="Sobol",
             sa_doe_options={"n_samples": ns, "calc_second_order": True},

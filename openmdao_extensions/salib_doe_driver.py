@@ -99,9 +99,9 @@ class SalibMorrisDOEGenerator(SalibDOEGenerator):
 
 
 class SalibSobolDOEGenerator(SalibDOEGenerator):
-    def __init__(self, n_samples=2, calc_second_order=True):
+    def __init__(self, n_samples=1000, calc_second_order=True):
         super(SalibSobolDOEGenerator, self).__init__()
-        # number of trajectories to apply morris method
+        # number of samples to generate
         self.n_samples = n_samples
         # whether calculing second order indices
         self.calc_second_order = calc_second_order
@@ -155,7 +155,10 @@ class SalibDOEDriver(DOEDriver):
             self.options["generator"] = SalibMorrisDOEGenerator(n_trajs, n_levels)
         elif self.options["sa_method_name"] == "Sobol":
             self.sa_settings.declare(
-                "n_samples", types=int, default=2, desc="number of samples to generate"
+                "n_samples",
+                types=int,
+                default=500,
+                desc="number of samples to generate",
             )
             self.sa_settings.declare(
                 "calc_second_order",
