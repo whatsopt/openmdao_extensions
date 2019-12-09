@@ -1,5 +1,6 @@
 """Define the NonlinearBlockGS class."""
 
+import os
 import numpy as np
 
 from openmdao.core.analysis_error import AnalysisError
@@ -11,10 +12,10 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
     """
     Extends Nonlinear block Gauss-Seidel solver with convergence variables options.
     Those options allows to focus on a subset of variables to drive the convergence.
-    It allows to get quickest convergence by ignoring 'noise' coming highly non linear 
-    variables. Obviously the user has to know what he/she is doing because 
+    It allows to get quickest convergence by ignoring 'noise' coming highly non linear
+    variables. Obviously the user has to know what he/she is doing because
     in that case some of the variables may not be converged properly
-    (hence the 'reckless' prefix in the name). 
+    (hence the 'reckless' prefix in the name).
 
     Attributes
     ----------

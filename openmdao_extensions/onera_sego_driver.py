@@ -29,7 +29,7 @@ def to_list(l, size):
 
 class OneraSegoDriver(Driver):
     """
-    OpenMDAO driver for ONERA SEGOMOE optimizer 
+    OpenMDAO driver for ONERA SEGOMOE optimizer
     """
 
     def __init__(self, **kwargs):
@@ -156,9 +156,8 @@ class OneraSegoDriver(Driver):
         )
 
         # Run the optim
-        exit_flag, x_best, obj_best, dt_opt = sego.run_optim(
-            n_iter=self.options["maxiter"]
-        )
+        # exit_flag, x_best, obj_best, dt_opt = sego.run_optim(
+        exit_flag, x_best, _, _ = sego.run_optim(n_iter=self.options["maxiter"])
 
         # Set optimal parameters
         i = 0
@@ -182,12 +181,12 @@ class OneraSegoDriver(Driver):
         return self.exit_flag
 
     def _initialize_vars(self):
-        vars = []
+        variables = []
         param_meta = self._designvars
         for name, meta in iteritems(param_meta):
             if meta["size"] > 1:
                 if np.isscalar(meta["lower"]):
-                    vars += [
+                    variables += [
                         {
                             "name": name + "_" + str(i),
                             "lb": meta["lower"],
@@ -196,7 +195,7 @@ class OneraSegoDriver(Driver):
                         for i in range(meta["size"])
                     ]
                 else:
-                    vars += [
+                    variables += [
                         {
                             "name": name + "_" + str(i),
                             "lb": meta["lower"][i],
@@ -205,10 +204,10 @@ class OneraSegoDriver(Driver):
                         for i in range(meta["size"])
                     ]
             else:
-                vars += [{"name": name, "lb": meta["lower"], "ub": meta["upper"]}]
-        self._sego_vars = vars
+                variables += [{"name": name, "lb": meta["lower"], "ub": meta["upper"]}]
+        self._sego_vars = variables
 
-    def _initialize_cons(self):
+    def _initialize_cons(self, eq_tol=None, ieq_tol=None):
         """
         Format OpenMDAO constraints to suit SEGOMOE implementation
 
@@ -239,7 +238,7 @@ class OneraSegoDriver(Driver):
             equals = to_list(meta["equals"], size)
             tol = to_list(eq_tol[name] if name in self.eq_tol else 1e-4, size)
 
-            for k in xrange(size):
+            for k in range(size):
                 add_con(
                     Constraint("=", equals[k], name=(name + "_" + str(k)), tol=tol[k])
                 )
@@ -332,7 +331,7 @@ class OneraSegoDriver(Driver):
             # Execute the model
             with RecordingDebugging(
                 self.options["optimizer"], self.iter_count, self
-            ) as rec:
+            ) as _:
                 self.iter_count += 1
                 try:
                     model._solve_nonlinear()
