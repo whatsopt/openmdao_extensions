@@ -1,14 +1,7 @@
 import os
 import unittest
 from six import itervalues
-from openmdao.api import (
-    IndepVarComp,
-    Problem,
-    Group,
-    SqliteRecorder,
-    CaseReader,
-    DOEDriver,
-)
+from openmdao.api import IndepVarComp, Problem, SqliteRecorder, CaseReader, DOEDriver
 from openmdao.test_suite.components.sellar import SellarProblem
 from openmdao_extensions.salib_doe_driver import SalibDOEDriver
 from openmdao_extensions.salib_doe_driver import SALIB_NOT_INSTALLED
