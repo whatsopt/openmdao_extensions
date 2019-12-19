@@ -1,16 +1,17 @@
 language: python
 python:
   - "2.7"
-  - "3.6"
-  - "3.7"
 
 jobs:
   include:
-  - python: "3"
-    before_install:
-      - pip install salib
-
-install: 
+    - python: "3.6"
+      before_install:
+        - pip install salib
+    - python: "3.7"
+      before_install:
+        - pip install salib
+  
+  install: 
   - pip install numpy cython 
   - pip install smt
   - pip install -e .
