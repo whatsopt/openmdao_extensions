@@ -7,6 +7,7 @@ This package is distributed under Apache 2 license.
 from setuptools import setup
 
 from os import path
+from io import open
 
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
@@ -20,6 +21,7 @@ License :: OSI Approved :: Apache Software License
 Programming Language :: Python
 Programming Language :: Python :: 2.7
 Programming Language :: Python :: 3.6
+Programming Language :: Python :: 3.7
 Topic :: Software Development
 Topic :: Scientific/Engineering
 Operating System :: Microsoft :: Windows
