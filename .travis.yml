@@ -5,6 +5,7 @@ python:
   - "3.7"
 
 install: 
+  - pip install numpy cython 
   - pip install smt salib
   - pip install -e .
   - pip list
