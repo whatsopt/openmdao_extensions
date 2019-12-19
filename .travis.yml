@@ -5,8 +5,8 @@ python:
   - "3.7"
 
 jobs:
-  before:
-  - python: "3.6"
+  include:
+  - python: "3"
     before_install:
       - pip install salib
 
