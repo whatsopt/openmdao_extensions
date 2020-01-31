@@ -83,6 +83,45 @@ class OpenturnsDOEDriver(DOEDriver):
             desc="options for given OpenTURNS DOE method",
         )
         self.options.update(kwargs)
+        self.doe_settings = OptionsDictionary()
+        if self.options["sa_method_name"] == "Morris":
+            self.sa_settings.declare(
+                "n_trajs",
+                types=int,
+                default=2,
+                desc="number of trajectories to apply morris method",
+            )
+            self.sa_settings.declare(
+                "n_levels", types=int, default=4, desc="number of grid levels"
+            )
+            self.sa_settings.update(self.options["sa_doe_options"])
+            n_trajs = self.sa_settings["n_trajs"]
+            n_levels = self.sa_settings["n_levels"]
+            self.options["generator"] = SalibMorrisDOEGenerator(n_trajs, n_levels)
+        elif self.options["sa_method_name"] == "Sobol":
+            self.sa_settings.declare(
+                "n_samples",
+                types=int,
+                default=500,
+                desc="number of samples to generate",
+            )
+            self.sa_settings.declare(
+                "calc_second_order",
+                types=bool,
+                default=True,
+                desc="calculate second-order sensitivities ",
+            )
+            self.sa_settings.update(self.options["sa_doe_options"])
+            n_samples = self.sa_settings["n_samples"]
+            calc_snd = self.sa_settings["calc_second_order"]
+            self.options["generator"] = SalibSobolDOEGenerator(n_samples, calc_snd)
+        else:
+            raise RuntimeError(
+                "Bad sensitivity analysis method name '{}'".format(
+                    self.options["sa_method_name"]
+                )
+            )
+
 
     def _set_name(self):
         self._name = "OpenTURNS_DOE_" + self.options["doe_method_name"]
