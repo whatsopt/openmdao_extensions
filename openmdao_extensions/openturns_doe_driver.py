@@ -1,7 +1,10 @@
 """
 Driver for running model on design of experiments cases using OpenTURNS sampling methods
 """
+from __future__ import print_function
 import numpy as np
+from six import iteritems
+from type import NoneType
 
 from openmdao.api import DOEDriver, OptionsDictionary
 from openmdao.drivers.doe_generators import DOEGenerator
@@ -12,119 +15,87 @@ try:
 except ImportError:
     OPENTURNS_NOT_INSTALLED = True
 
-class OpenturnsDOEGenerator(DOEGenerator):
-    def __init__(self):
-        if OpenTURNS_NOT_INSTALLED:
-            raise RuntimeError(
-                "OpenTURNS library is not installed. cf. http://www.openturns.org/"
-            )
-        self.options.declare(
-            "distribution",
-            default=ot.Distribution,
-            desc="Joint distribution of uncertain variables",
-        )
+
+class OpenturnsMonteCarloDOEGenerator(DOEGenerator):
+    def __init__(self, n_samples=10, dist=None):
+        super(OpenturnsMonteCarloDOEGenerator, self).__init__()
+
+        self.distribution = dist
         self.called = False
 
     def __call__(self, uncertain_vars, model=None):
-        slef.dist = self.options["distribution"]
-        if (len(uncertain_vars)) != (self.dist.getDimension()):
-            raise RuntimeError(
-                "Bad distribution dimension: should be equal to uncertain variables number {} "\
-                    ", got {}".format(len(uncertain_vars), self.dist.getDimension())
-            )
+        if self.distribution is None:
+            dists = []
+            for name, meta in iteritems(uncertain_vars):
+                size = meta["size"]
+                meta_low = meta["lower"]
+                meta_high = meta["upper"]
+                for j in range(size):
+                    if isinstance(meta_low, np.ndarray):
+                        p_low = meta_low[j]
+                    else:
+                        p_low = meta_low
 
-        self._compute_cases()
+                    if isinstance(meta_high, np.ndarray):
+                        p_high = meta_high[j]
+                    else:
+                        p_high = meta_high
+
+                    dists.append(ot.Uniform(p_low, p_high))
+            self.distribution = ot.ComposedDistribution(dists)
+        else:
+            size = 0
+            for name, meta in iteritems(uncertain_vars):
+                size += meta["size"]
+            if (size) != (self.distribution.getDimension()):
+                raise RuntimeError(
+                    "Bad distribution dimension: should be equal to uncertain variables size {} "
+                    ", got {}".format(size, self.distribution.getDimension())
+                )
+
+        samples = self.distribution.getSamples()
+        self._cases = np.array(samples)
         self.called = True
         sample = []
         for i in range(self._cases.shape[0]):
             j = 0
-            for name, meta in iteritems(design_vars):
+            for name, meta in iteritems(uncertain_vars):
                 size = meta["size"]
                 sample.append((name, self._cases[i, j : j + size]))
                 j += size
             yield sample
-
-    def _compute_cases(self):
-        raise RuntimeError("Have to be implemented in subclass.")
 
     def get_cases(self):
         if not self.called:
             raise RuntimeError("Have to run the driver before getting cases")
         return self._cases
 
-class OpenturnsLHSGenerator(DOEGenerator):
-    def __init__(self, n_trajs=2, n_levels=4):
-        super(OpenturnsLHSGenerator, self).__init__()
-        # number of trajectories to apply morris method
-        self.n_trajs = n_trajs
-        # number of grid levels
-        self.n_levels = n_levels
-
-    def _compute_cases(self):
-        self._cases = ms.sample(self._pb, self.n_trajs, self.n_levels)
-
 
 class OpenturnsDOEDriver(DOEDriver):
     """
     Baseclass for OpenTURNS design-of-experiments Drivers
     """
+
     def __init__(self, **kwargs):
-        super(OpenTurnsDOEDriver, self).__init__()
+        super(OpenturnsDOEDriver, self).__init__()
+
         self.options.declare(
-            "doe_method_name",
-            default="Morris",
-            values=["Morris", "Sobol"],
-            desc="either Morris or Sobol",
+            "distribution",
+            types=(types.NoneType, ot.Distribution),
+            default=None,
+            desc="Joint distribution of uncertain variables",
         )
         self.options.declare(
-            "doe_options",
-            types=dict,
-            default={},
-            desc="options for given OpenTURNS DOE method",
+            "n_samples", types=int, default=2, desc="number of sample to generate"
         )
         self.options.update(kwargs)
-        self.doe_settings = OptionsDictionary()
-        if self.options["sa_method_name"] == "Morris":
-            self.sa_settings.declare(
-                "n_trajs",
-                types=int,
-                default=2,
-                desc="number of trajectories to apply morris method",
-            )
-            self.sa_settings.declare(
-                "n_levels", types=int, default=4, desc="number of grid levels"
-            )
-            self.sa_settings.update(self.options["sa_doe_options"])
-            n_trajs = self.sa_settings["n_trajs"]
-            n_levels = self.sa_settings["n_levels"]
-            self.options["generator"] = SalibMorrisDOEGenerator(n_trajs, n_levels)
-        elif self.options["sa_method_name"] == "Sobol":
-            self.sa_settings.declare(
-                "n_samples",
-                types=int,
-                default=500,
-                desc="number of samples to generate",
-            )
-            self.sa_settings.declare(
-                "calc_second_order",
-                types=bool,
-                default=True,
-                desc="calculate second-order sensitivities ",
-            )
-            self.sa_settings.update(self.options["sa_doe_options"])
-            n_samples = self.sa_settings["n_samples"]
-            calc_snd = self.sa_settings["calc_second_order"]
-            self.options["generator"] = SalibSobolDOEGenerator(n_samples, calc_snd)
-        else:
-            raise RuntimeError(
-                "Bad sensitivity analysis method name '{}'".format(
-                    self.options["sa_method_name"]
-                )
-            )
 
+        self.options["generator"] = OpenturnsMonteCarloDOEGenerator(
+            self.options["n_samples"], self.options["distribution"]
+        )
 
     def _set_name(self):
-        self._name = "OpenTURNS_DOE_" + self.options["doe_method_name"]
+        self._name = "OpenTURNS_DOE_MonteCarlo"
 
     def get_cases(self):
-        return self.options["generator"].get_cases()
+        return self.generator.get_cases()

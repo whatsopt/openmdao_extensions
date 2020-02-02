@@ -6,7 +6,8 @@ from openmdao.test_suite.components.sellar import SellarProblem
 from openmdao_extensions.openturns_doe_driver import OpenturnsDOEDriver
 from openmdao_extensions.openturns_doe_driver import OPENTURNS_NOT_INSTALLED
 
-class TestSalibDoeDriver(unittest.TestCase):
+
+class TestOpenturnsDoeDriver(unittest.TestCase):
     @staticmethod
     def run_driver(name, driver):
         pb = SellarProblem()
@@ -21,13 +22,11 @@ class TestSalibDoeDriver(unittest.TestCase):
 
     def test_openturns_doe_driver(self):
         ns = 100
-        driver = OpenturnsDOEDriver(
-            doe_method_name="LHS",
-            doe_options={"n_samples": ns},
-        )
-        TestOpenturnsDoeDriver.run_driver("lhs", driver)
+        driver = OpenturnsDOEDriver(n_samples=ns)
+        TestOpenturnsDoeDriver.run_driver("mc", driver)
         ot_cases = driver.get_cases()
         self.assertTrue(len(ot_cases) > 0)
+
 
 if __name__ == "__main__":
     unittest.main()
