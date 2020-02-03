@@ -5,6 +5,7 @@ from openmdao.api import IndepVarComp, Problem, SqliteRecorder, CaseReader, DOED
 from openmdao.test_suite.components.sellar import SellarProblem
 from openmdao_extensions.openturns_doe_driver import OpenturnsDOEDriver
 from openmdao_extensions.openturns_doe_driver import OPENTURNS_NOT_INSTALLED
+import openturns as ot
 
 
 class TestOpenturnsDoeDriver(unittest.TestCase):
@@ -24,8 +25,24 @@ class TestOpenturnsDoeDriver(unittest.TestCase):
         ns = 100
         driver = OpenturnsDOEDriver(n_samples=ns)
         TestOpenturnsDoeDriver.run_driver("mc", driver)
-        ot_cases = driver.get_cases()
-        self.assertTrue(len(ot_cases) > 0)
+        cases = driver.get_cases()
+        self.assertEqual((100, 3), cases.shape)
+
+    def test_openturns_doe_driver_with_dist(self):
+        ns = 100
+        dists = [ot.Normal(2, 1), ot.Normal(5, 1), ot.Normal(2, 1)]
+        driver = OpenturnsDOEDriver(n_samples=ns, distribution=ot.ComposedDistribution(dists))
+        TestOpenturnsDoeDriver.run_driver("mc", driver)
+        cases = driver.get_cases()
+        self.assertEqual((100, 3), cases.shape)
+
+    def test_bad_dist(self):
+        ns = 100
+        dists = [ot.Normal(2, 1), ot.Normal(5, 1)]
+        driver = OpenturnsDOEDriver(n_samples=ns, distribution=ot.ComposedDistribution(dists))
+
+        with self.assertRaises(RuntimeError) as cm:
+            TestOpenturnsDoeDriver.run_driver("mc", driver)
 
 
 if __name__ == "__main__":

@@ -4,7 +4,6 @@ Driver for running model on design of experiments cases using OpenTURNS sampling
 from __future__ import print_function
 import numpy as np
 from six import iteritems
-from type import NoneType
 
 from openmdao.api import DOEDriver, OptionsDictionary
 from openmdao.drivers.doe_generators import DOEGenerator
@@ -20,6 +19,7 @@ class OpenturnsMonteCarloDOEGenerator(DOEGenerator):
     def __init__(self, n_samples=10, dist=None):
         super(OpenturnsMonteCarloDOEGenerator, self).__init__()
 
+        self.n_samples=n_samples
         self.distribution = dist
         self.called = False
 
@@ -53,7 +53,7 @@ class OpenturnsMonteCarloDOEGenerator(DOEGenerator):
                     ", got {}".format(size, self.distribution.getDimension())
                 )
 
-        samples = self.distribution.getSamples()
+        samples = self.distribution.getSample(self.n_samples)
         self._cases = np.array(samples)
         self.called = True
         sample = []
@@ -81,8 +81,9 @@ class OpenturnsDOEDriver(DOEDriver):
 
         self.options.declare(
             "distribution",
-            types=(types.NoneType, ot.Distribution),
+            types=ot.ComposedDistribution,
             default=None,
+            allow_none=True,
             desc="Joint distribution of uncertain variables",
         )
         self.options.declare(
@@ -98,4 +99,4 @@ class OpenturnsDOEDriver(DOEDriver):
         self._name = "OpenTURNS_DOE_MonteCarlo"
 
     def get_cases(self):
-        return self.generator.get_cases()
+        return self.options["generator"].get_cases()
