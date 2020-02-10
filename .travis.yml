@@ -10,7 +10,7 @@ jobs:
 
 install: 
   - pip install numpy cython 
-  - pip install smt salib
+  - pip install smt salib openturns
   - pip install -e .
   - pip list
 
