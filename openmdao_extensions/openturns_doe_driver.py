@@ -16,10 +16,12 @@ except ImportError:
 
 
 class OpenturnsMonteCarloDOEGenerator(DOEGenerator):
+    LIMIT = 1e12
+
     def __init__(self, n_samples=10, dist=None):
         super(OpenturnsMonteCarloDOEGenerator, self).__init__()
 
-        self.n_samples=n_samples
+        self.n_samples = n_samples
         self.distribution = dist
         self.called = False
 
@@ -35,11 +37,13 @@ class OpenturnsMonteCarloDOEGenerator(DOEGenerator):
                         p_low = meta_low[j]
                     else:
                         p_low = meta_low
+                    p_low = max(p_low, -self.LIMIT)
 
                     if isinstance(meta_high, np.ndarray):
                         p_high = meta_high[j]
                     else:
                         p_high = meta_high
+                    p_high = min(p_high, self.LIMIT)
 
                     dists.append(ot.Uniform(p_low, p_high))
             self.distribution = ot.ComposedDistribution(dists)
@@ -52,7 +56,6 @@ class OpenturnsMonteCarloDOEGenerator(DOEGenerator):
                     "Bad distribution dimension: should be equal to uncertain variables size {} "
                     ", got {}".format(size, self.distribution.getDimension())
                 )
-
         samples = self.distribution.getSample(self.n_samples)
         self._cases = np.array(samples)
         self.called = True
