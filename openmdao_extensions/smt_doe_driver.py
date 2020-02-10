@@ -107,12 +107,3 @@ class SmtDOEDriver(DOEDriver):
     def _set_name(self):
         self._name = "SMT_DOE_" + self.options["sampling_method_name"]
 
-
-class SmtDoeDriver(SmtDOEDriver):
-    """
-    Deprecated. Use SmtDOEDriver.
-    """
-
-    def __init__(self, **kwargs):
-        super(SmtDoeDriver, self).__init__(**kwargs)
-        warn_deprecation("'SmtDoeDriver' is deprecated; " "use 'SmtDOEDriver' instead.")

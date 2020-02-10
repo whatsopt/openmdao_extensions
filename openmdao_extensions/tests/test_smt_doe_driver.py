@@ -2,7 +2,7 @@ import os
 import unittest
 from openmdao.api import SqliteRecorder, CaseReader
 from openmdao.test_suite.components.sellar import SellarProblem
-from openmdao_extensions.smt_doe_driver import SmtDOEDriver, SmtDoeDriver
+from openmdao_extensions.smt_doe_driver import SmtDOEDriver
 from openmdao_extensions.smt_doe_driver import SMT_NOT_INSTALLED
 from openmdao.utils.assert_utils import assert_warning
 
@@ -51,13 +51,6 @@ class TestSmtDoeDriver(unittest.TestCase):
         self.assert_case_generation(
             n, SmtDOEDriver(sampling_method_name="Random", n_cases=n)
         )
-
-    @unittest.skipIf(SMT_NOT_INSTALLED, "SMT library is not installed")
-    def test_deprecated(self):
-        msg = "'SmtDoeDriver' is deprecated; " "use 'SmtDOEDriver' instead."
-        with assert_warning(DeprecationWarning, msg):
-            SmtDoeDriver()
-
 
 if __name__ == "__main__":
     unittest.main()
