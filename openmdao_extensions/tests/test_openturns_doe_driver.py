@@ -31,7 +31,9 @@ class TestOpenturnsDoeDriver(unittest.TestCase):
     def test_openturns_doe_driver_with_dist(self):
         ns = 100
         dists = [ot.Normal(2, 1), ot.Normal(5, 1), ot.Normal(2, 1)]
-        driver = OpenturnsDOEDriver(n_samples=ns, distribution=ot.ComposedDistribution(dists))
+        driver = OpenturnsDOEDriver(
+            n_samples=ns, distribution=ot.ComposedDistribution(dists)
+        )
         TestOpenturnsDoeDriver.run_driver("mc", driver)
         cases = driver.get_cases()
         self.assertEqual((100, 3), cases.shape)
@@ -39,9 +41,11 @@ class TestOpenturnsDoeDriver(unittest.TestCase):
     def test_bad_dist(self):
         ns = 100
         dists = [ot.Normal(2, 1), ot.Normal(5, 1)]
-        driver = OpenturnsDOEDriver(n_samples=ns, distribution=ot.ComposedDistribution(dists))
+        driver = OpenturnsDOEDriver(
+            n_samples=ns, distribution=ot.ComposedDistribution(dists)
+        )
 
-        with self.assertRaises(RuntimeError) as cm:
+        with self.assertRaises(RuntimeError):
             TestOpenturnsDoeDriver.run_driver("mc", driver)
 
 
