@@ -2,10 +2,12 @@
 
 import os
 import numpy as np
+from packaging import version
 
 from openmdao.core.analysis_error import AnalysisError
 from openmdao.recorders.recording_iteration_stack import Recording
 from openmdao.api import NonlinearBlockGS
+from openmdao import __version__ as OPENMDAO_VERSION
 
 
 class RecklessNonlinearBlockGS(NonlinearBlockGS):
@@ -99,25 +101,55 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             self._mpi_print(self._iter_count, norm, norm / norm0)
             is_rtol_converged = self._is_rtol_converged(norm, norm0)
 
-        if self._system.comm.rank == 0 or os.environ.get("USE_PROC_FILES"):
+        if version.parse(OPENMDAO_VERSION) > version.parse("2.9.1"):
+            system = self._system()
+        else:
+            system = self._system
+        if system.comm.rank == 0 or os.environ.get("USE_PROC_FILES"):
             prefix = self._solver_info.prefix + self.SOLVER
             is_rtol_converged = self._is_rtol_converged(norm, norm0)
-            if (
-                np.isinf(norm)
-                or np.isnan(norm)
-                or (norm > atol and not is_rtol_converged)
-            ):
+            # Solver terminated early because a Nan in the norm doesn't satisfy the while-loop
+            # conditionals.
+            if np.isinf(norm) or np.isnan(norm):
+                msg = (
+                    "Solver '{}' on system '{}': residuals contain 'inf' or 'NaN' after {} "
+                    + "iterations."
+                )
                 if iprint > -1:
-                    msg = " Failed to Converge in {} iterations".format(
-                        self._iter_count
+                    print(
+                        prefix
+                        + msg.format(self.SOLVER, system.pathname, self._iter_count)
                     )
-                    print(prefix + msg)
 
                 # Raise AnalysisError if requested.
-                if self.options["err_on_maxiter"]:
-                    msg = "Solver '{}' on system '{}' failed to converge."
-                    raise AnalysisError(msg.format(self.SOLVER, self._system.pathname))
+                if self.options["err_on_non_converge"]:
+                    raise AnalysisError(
+                        msg.format(self.SOLVER, system.pathname, self._iter_count)
+                    )
 
+            # Solver hit maxiter without meeting desired tolerances.
+            elif norm > atol and not is_rtol_converged:
+                msg = "Solver '{}' on system '{}' failed to converge in {} iterations."
+
+                if iprint > -1:
+                    print(
+                        prefix
+                        + msg.format(self.SOLVER, system.pathname, self._iter_count)
+                    )
+
+                # Raise AnalysisError if requested.
+                if version.parse(OPENMDAO_VERSION) > version.parse("2.9.1"):
+                    if self.options["err_on_non_converge"]:
+                        raise AnalysisError(
+                            msg.format(self.SOLVER, system.pathname, self._iter_count)
+                        )
+                else:
+                    if self.options["err_on_maxiter"]:
+                        raise AnalysisError(
+                            msg.format(self.SOLVER, system.pathname, self._iter_count)
+                        )
+
+            # Solver converged
             elif iprint == 1:
                 print(prefix + " Converged in {} iterations".format(self._iter_count))
             elif iprint == 2:
@@ -164,13 +196,17 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
         bool
             whether convergence is reached regarding relative error tolerance
         """
+        if version.parse(OPENMDAO_VERSION) > version.parse("2.9.1"):
+            system = self._system()
+        else:
+            system = self._system
         if self._convrg_vars:
             nbvars = len(self._convrg_vars)
             rerrs = np.ones(nbvars)
             outputs = np.ones(nbvars)
             for i, name in enumerate(self._convrg_vars):
-                outputs[i] = self._system._outputs._views[name]
-                residual = self._system._residuals._views[name]
+                outputs[i] = system._outputs._views[name]
+                residual = system._residuals._views[name]
                 rerrs[i] = np.linalg.norm(residual) / np.linalg.norm(outputs[i])
             is_rtol_converged = (rerrs < self._convrg_rtols).all()
         else:
@@ -186,10 +222,14 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
         float
             norm.
         """
+        if version.parse(OPENMDAO_VERSION) > version.parse("2.9.1"):
+            system = self._system()
+        else:
+            system = self._system
         if self._convrg_vars:
             total = []
             for name in self._convrg_vars:
-                total.append(self._system._residuals._views_flat[name])
+                total.append(system._residuals._views_flat[name])
             norm = np.linalg.norm(np.concatenate(total))
         else:
             norm = super(RecklessNonlinearBlockGS, self)._iter_get_norm()
