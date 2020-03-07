@@ -43,6 +43,18 @@ metadata = dict(
     zip_safe=True,
     url="https://github.com/OneraHub/opendmao_extensions",
     download_url="https://github.com/OneraHub/openmdao_extensions/releases",
+    keywords="openmdao openmdao_driver openmdao_nl_solver",
+    entry_points={
+        "openmdao_driver": [
+            "onerasegodriver = openmdao_extensions.onera_sego_driver:OneraSegoDriver",
+            "openturnsdoedriver = openmdao_extensions.openturns_doe_driver:OpenturnsDOEDriver",
+            "salibdoedriver = openmdao_extensions.salib_doe_driver:SalibDOEDriver",
+            "smtdoedriver = openmdao_extensions.smt_doe_driver:SmtDOEDriver",
+        ],
+        "openmdao_nl_solver": [
+            "recklessnonlinearblockgs = openmdao_extensions.reckless_nonlinear_block_gs:RecklessNonlinearBlockGS"
+        ],
+    },
 )
 
 setup(**metadata)
