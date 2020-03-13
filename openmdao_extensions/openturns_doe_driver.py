@@ -1,9 +1,7 @@
 """
 Driver for running model on design of experiments cases using OpenTURNS sampling methods
 """
-from __future__ import print_function
 import numpy as np
-from six import iteritems
 
 from openmdao.api import DOEDriver, OptionsDictionary
 from openmdao.drivers.doe_generators import DOEGenerator
@@ -28,7 +26,7 @@ class OpenturnsMonteCarloDOEGenerator(DOEGenerator):
     def __call__(self, uncertain_vars, model=None):
         if self.distribution is None:
             dists = []
-            for name, meta in iteritems(uncertain_vars):
+            for name, meta in uncertain_vars.items():
                 size = meta["size"]
                 meta_low = meta["lower"]
                 meta_high = meta["upper"]
@@ -49,7 +47,7 @@ class OpenturnsMonteCarloDOEGenerator(DOEGenerator):
             self.distribution = ot.ComposedDistribution(dists)
         else:
             size = 0
-            for name, meta in iteritems(uncertain_vars):
+            for name, meta in uncertain_vars.items():
                 size += meta["size"]
             if (size) != (self.distribution.getDimension()):
                 raise RuntimeError(
@@ -62,7 +60,7 @@ class OpenturnsMonteCarloDOEGenerator(DOEGenerator):
         sample = []
         for i in range(self._cases.shape[0]):
             j = 0
-            for name, meta in iteritems(uncertain_vars):
+            for name, meta in uncertain_vars.items():
                 size = meta["size"]
                 sample.append((name, self._cases[i, j : j + size]))
                 j += size

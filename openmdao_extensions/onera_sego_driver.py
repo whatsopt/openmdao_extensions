@@ -1,6 +1,4 @@
-from __future__ import print_function
 import numpy as np
-from six import iteritems
 import traceback
 from packaging import version
 
@@ -121,11 +119,11 @@ class OneraSegoDriver(Driver):
 
         # Format option dictionary to suit SEGO implementation
         optim_settings = {}
-        for opt, opt_dict in iteritems(get_sego_options()):
+        for opt, opt_dict in get_sego_options().items():
             optim_settings[opt] = opt_dict["default"]
         n_iter = self.opt_settings["maxiter"]
         optim_settings.update(
-            {k: v for k, v in iteritems(self.opt_settings) if k != "maxiter"}
+            {k: v for k, v in self.opt_settings.items() if k != "maxiter"}
         )
 
         # In OpenMDAO context, obj and constraints are always evaluated together
@@ -135,7 +133,7 @@ class OneraSegoDriver(Driver):
         mod_obj = {"corr": "squared_exponential", "regr": "constant", "normalize": True}
 
         dim = 0
-        for name, meta in iteritems(self._designvars):
+        for name, meta in self._designvars.items():
             dim += meta["size"]
         print("Designvars dimension: ", dim)
         if dim > 10:
@@ -168,7 +166,7 @@ class OneraSegoDriver(Driver):
 
         # Set optimal parameters
         i = 0
-        for name, meta in iteritems(self._designvars):
+        for name, meta in self._designvars.items():
             size = meta["size"]
             self.set_design_var(name, x_best[i : i + size])
             i += size
@@ -190,7 +188,7 @@ class OneraSegoDriver(Driver):
     def _initialize_vars(self):
         variables = []
         param_meta = self._designvars
-        for name, meta in iteritems(param_meta):
+        for name, meta in param_meta.items():
             if meta["size"] > 1:
                 if np.isscalar(meta["lower"]):
                     variables += [
@@ -235,8 +233,8 @@ class OneraSegoDriver(Driver):
         eval_index = 1
 
         con_meta = self._cons
-        eq_cons = {name: con for name, con in iteritems(con_meta) if con["equals"]}
-        ieq_cons = {name: con for name, con in iteritems(con_meta) if not con["equals"]}
+        eq_cons = {name: con for name, con in con_meta.items() if con["equals"]}
+        ieq_cons = {name: con for name, con in con_meta.items() if not con["equals"]}
 
         # Equality constraints
         for name in eq_cons.keys():
@@ -333,7 +331,7 @@ class OneraSegoDriver(Driver):
             # Pass in new parameters
             i = 0
 
-            for name, meta in iteritems(self._designvars):
+            for name, meta in self._designvars.items():
                 size = meta["size"]
                 self.set_design_var(name, point[i : i + size])
                 i += size
@@ -352,11 +350,11 @@ class OneraSegoDriver(Driver):
                     fail = True
 
             # Get the objective function evaluation - single obj support
-            for name, obj in iteritems(self.get_objective_values()):
+            for name, obj in self.get_objective_values().items():
                 res[0] = obj
 
             # Get the constraint evaluations:
-            for name, con_res in iteritems(self.get_constraint_values()):
+            for name, con_res in self.get_constraint_values().items():
                 # Make sure con_res is array_like
                 con_res = to_list(con_res, len(self._map_con[name]))
                 # Perform mapping

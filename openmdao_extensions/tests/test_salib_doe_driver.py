@@ -1,6 +1,5 @@
 import os
 import unittest
-from six import itervalues
 from openmdao.api import IndepVarComp, Problem, SqliteRecorder, CaseReader, DOEDriver
 from openmdao.test_suite.components.sellar import SellarProblem
 from openmdao_extensions.salib_doe_driver import SalibDOEDriver
@@ -29,7 +28,7 @@ class TestSalibDoeDriver(unittest.TestCase):
         reader = CaseReader(case_recorder_filename)
         cases = reader.list_cases("driver")
         os.remove(case_recorder_filename)
-        n = sum(data["size"] for data in itervalues(pb.model.get_design_vars()))
+        n = sum(data["size"] for data in pb.model.get_design_vars().values())
         self.assertEqual(len(cases), (n + 1) * nt)
 
     @unittest.skipIf(SALIB_NOT_INSTALLED, "SALib library is not installed")

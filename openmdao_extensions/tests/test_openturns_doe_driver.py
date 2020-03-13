@@ -1,6 +1,5 @@
 import os
 import unittest
-from six import itervalues
 from openmdao.api import IndepVarComp, Problem, SqliteRecorder, CaseReader, DOEDriver
 from openmdao.test_suite.components.sellar import SellarProblem
 from openmdao_extensions.openturns_doe_driver import OpenturnsDOEDriver

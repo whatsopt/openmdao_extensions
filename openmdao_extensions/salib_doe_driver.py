@@ -1,10 +1,6 @@
 """
 Driver for running model on design of experiments cases using Salib sampling methods
 """
-from __future__ import print_function
-from six import iteritems
-from six.moves import range
-
 import numpy as np
 
 from openmdao.api import DOEDriver, OptionsDictionary
@@ -32,7 +28,7 @@ class SalibDOEGenerator(DOEGenerator):
     def __call__(self, design_vars, model=None):
         bounds = []
         names = []
-        for name, meta in iteritems(design_vars):
+        for name, meta in design_vars.items():
             size = meta["size"]
             meta_low = meta["lower"]
             meta_high = meta["upper"]
@@ -64,7 +60,7 @@ class SalibDOEGenerator(DOEGenerator):
         sample = []
         for i in range(self._cases.shape[0]):
             j = 0
-            for name, meta in iteritems(design_vars):
+            for name, meta in design_vars.items():
                 size = meta["size"]
                 sample.append((name, self._cases[i, j : j + size]))
                 j += size
