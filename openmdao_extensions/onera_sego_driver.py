@@ -66,7 +66,6 @@ class OneraSegoDriver(Driver):
             values=["SEGOMOE"],
             desc="Name of optimizers to use",
         )
-        self.options.declare("maxiter", default=100, desc="Maximum number of iteration")
 
     def _setup_driver(self, problem):
         super(OneraSegoDriver, self)._setup_driver(problem)
@@ -124,8 +123,10 @@ class OneraSegoDriver(Driver):
         optim_settings = {}
         for opt, opt_dict in iteritems(get_sego_options()):
             optim_settings[opt] = opt_dict["default"]
-
-        optim_settings.update(self.opt_settings)
+        n_iter = self.opt_settings["maxiter"]
+        optim_settings.update(
+            {k: v for k, v in iteritems(self.opt_settings) if k != "maxiter"}
+        )
 
         # In OpenMDAO context, obj and constraints are always evaluated together
         optim_settings["grouped_eval"] = True
@@ -150,6 +151,7 @@ class OneraSegoDriver(Driver):
 
         optim_settings["model_type"] = {"obj": mod_obj, "con": mod_obj}
 
+        print(optim_settings)
         # Instanciate a SEGO optimizer
         sego = Sego(
             self._objfunc,
@@ -162,7 +164,7 @@ class OneraSegoDriver(Driver):
 
         # Run the optim
         # exit_flag, x_best, obj_best, dt_opt = sego.run_optim(
-        exit_flag, x_best, _, _ = sego.run_optim(n_iter=self.options["maxiter"])
+        exit_flag, x_best, _, _ = sego.run_optim(n_iter=n_iter)
 
         # Set optimal parameters
         i = 0
