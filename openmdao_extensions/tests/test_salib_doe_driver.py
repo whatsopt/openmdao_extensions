@@ -1,6 +1,6 @@
 import os
 import unittest
-from openmdao.api import IndepVarComp, Problem, SqliteRecorder, CaseReader
+from openmdao.api import SqliteRecorder, CaseReader
 from openmdao.test_suite.components.sellar import SellarProblem
 from openmdao_extensions.salib_doe_driver import SalibDOEDriver
 from openmdao_extensions.salib_doe_driver import SALIB_NOT_INSTALLED

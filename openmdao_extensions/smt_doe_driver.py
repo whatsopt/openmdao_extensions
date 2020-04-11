@@ -5,7 +5,6 @@ import numpy as np
 
 from openmdao.api import DOEDriver
 from openmdao.drivers.doe_generators import DOEGenerator
-from openmdao.utils.general_utils import warn_deprecation
 
 SMT_NOT_INSTALLED = False
 try:
@@ -104,4 +103,3 @@ class SmtDOEDriver(DOEDriver):
 
     def _set_name(self):
         self._name = "SMT_DOE_" + self.options["sampling_method_name"]
-

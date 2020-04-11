@@ -3,7 +3,7 @@ Driver for running model on design of experiments cases using OpenTURNS sampling
 """
 import numpy as np
 
-from openmdao.api import DOEDriver, OptionsDictionary
+from openmdao.api import DOEDriver
 from openmdao.drivers.doe_generators import DOEGenerator
 
 OPENTURNS_NOT_INSTALLED = False

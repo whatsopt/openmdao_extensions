@@ -22,7 +22,8 @@ class Branin(ExplicitComponent):
         self.add_output("obj", val=1.0)
         self.add_output("con", val=1.0)
 
-    def compute(self, inputs, outputs):
+    @staticmethod
+    def compute(inputs, outputs):
         x_1 = inputs["x1"][0]
         x_2 = inputs["x2"][0]
         # obj
@@ -56,7 +57,8 @@ class Ackley(ExplicitComponent):
         self.add_input("x", val=[1.0, 1.0])
         self.add_output("obj", val=1.0)
 
-    def compute(self, inputs, outputs):
+    @staticmethod
+    def compute(inputs, outputs):
         dim = 2
         a = 20.0
         b = 0.2

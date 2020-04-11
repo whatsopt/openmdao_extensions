@@ -1,5 +1,5 @@
 import unittest
-from openmdao.api import IndepVarComp, Problem, SqliteRecorder
+from openmdao.api import SqliteRecorder
 from openmdao.test_suite.components.sellar import SellarProblem
 from openmdao_extensions.openturns_doe_driver import OpenturnsDOEDriver
 from openmdao_extensions.openturns_doe_driver import OPENTURNS_NOT_INSTALLED
