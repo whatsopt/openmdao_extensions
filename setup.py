@@ -41,7 +41,7 @@ metadata = dict(
     install_requires=["openmdao"],
     python_requires=">=3.6",
     zip_safe=True,
-    url="https://github.com/OneraHub/opendmao_extensions",
+    url="https://github.com/OneraHub/openmdao_extensions",
     download_url="https://github.com/OneraHub/openmdao_extensions/releases",
     keywords="openmdao openmdao_driver openmdao_nl_solver",
     entry_points={
