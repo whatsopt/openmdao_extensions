@@ -9,10 +9,11 @@ from openmdao.drivers.doe_generators import DOEGenerator
 SMT_NOT_INSTALLED = False
 try:
     from smt.sampling_methods import FullFactorial, LHS, Random
-except ImportError:
-    SMT_NOT_INSTALLED = False
 
-_sampling_methods = {"FullFactorial": FullFactorial, "LHS": LHS, "Random": Random}
+    _SAMPLING_METHODS = {"FullFactorial": FullFactorial, "LHS": LHS, "Random": Random}
+
+except ImportError:
+    SMT_NOT_INSTALLED = True
 
 
 class SmtDOEGenerator(DOEGenerator):
@@ -21,7 +22,7 @@ class SmtDOEGenerator(DOEGenerator):
 
         if SMT_NOT_INSTALLED:
             raise RuntimeError(
-                "SMT library is not installed. cf. https://https://smt.readthedocs.io/en/latest"
+                "SMT library is not installed. Run `pip install smt`. See https://smt.readthedocs.io/en/latest"
             )
 
         # number of trajectories to apply morris method
@@ -50,7 +51,7 @@ class SmtDOEGenerator(DOEGenerator):
 
                 xlimits.append((p_low, p_high))
 
-        sampling = _sampling_methods[self.sampling_method_name](
+        sampling = _SAMPLING_METHODS[self.sampling_method_name](
             xlimits=np.array(xlimits), **(self.sampling_method_opts)
         )
         cases = sampling(self.n_cases)
