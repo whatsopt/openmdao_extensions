@@ -29,7 +29,7 @@ Operating System :: MacOS
 
 metadata = dict(
     name="openmdao_extensions",
-    version="1.0.1",
+    version="1.0.2",
     description="Additional solvers and drivers for OpenMDAO framework",
     long_description=long_description,
     long_description_content_type="text/markdown",
