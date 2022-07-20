@@ -157,8 +157,7 @@ class EgoboxEgorDriver(Driver):
         return variables
 
     def _initialize_cons(self, eq_tol=None, ieq_tol=None):
-        """
-        Format OpenMDAO constraints to suit EGOR implementation
+        """Format OpenMDAO constraints to suit EGOR implementation
 
         Parameters
         ----------
