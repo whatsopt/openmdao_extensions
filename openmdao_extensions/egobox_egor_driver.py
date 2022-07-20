@@ -28,9 +28,7 @@ class EgoboxEgorDriver(Driver):
     """OpenMDAO driver for egobox optimizer"""
 
     def __init__(self, **kwargs):
-        """
-        Initialize the driver with the following option.
-        """
+        """Initialize the driver with the given options."""
         super(EgoboxEgorDriver, self).__init__(**kwargs)
 
         if EGOBOX_NOT_INSTALLED:
@@ -235,16 +233,16 @@ class EgoboxEgorDriver(Driver):
                         model._clear_iprint()
 
                 # Get the objective function evaluation - single obj support
-                for name, obj in self.get_objective_values().items():
+                for obj in self.get_objective_values().values():
                     res[k, 0] = obj
 
                 # Get the constraint evaluations
                 j = 1
-                for name, con_res in self.get_constraint_values().items():
+                for con_res in self.get_constraint_values().values():
                     # Make sure con_res is array_like
                     con_res = to_list(con_res, 1)
                     # Perform mapping
-                    for i in range(len(con_res)):
+                    for i, _ in enumerate(con_res):
                         res[k, j + i] = con_res[i]
                     j += 1
 
