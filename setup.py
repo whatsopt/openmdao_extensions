@@ -29,7 +29,7 @@ Operating System :: MacOS
 
 metadata = dict(
     name="openmdao_extensions",
-    version="1.0.2",
+    version="1.1.0",
     description="Additional solvers and drivers for OpenMDAO framework",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -39,13 +39,14 @@ metadata = dict(
     classifiers=[_f for _f in CLASSIFIERS.split("\n") if _f],
     packages=["openmdao_extensions"],
     install_requires=["openmdao"],
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     zip_safe=True,
     url="https://github.com/OneraHub/openmdao_extensions",
     download_url="https://github.com/OneraHub/openmdao_extensions/releases",
     keywords="openmdao openmdao_driver openmdao_nl_solver",
     entry_points={
         "openmdao_driver": [
+            "egoboxegordriver = openmdao_extensions.egobox_egor_driver:EgoboxEgorDriver",
             "onerasegodriver = openmdao_extensions.onera_sego_driver:OneraSegoDriver",
             "openturnsdoedriver = openmdao_extensions.openturns_doe_driver:OpenturnsDOEDriver",
             "salibdoedriver = openmdao_extensions.salib_doe_driver:SalibDOEDriver",
