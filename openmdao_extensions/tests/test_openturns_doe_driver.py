@@ -17,7 +17,6 @@ class TestOpenturnsDoeDriver(unittest.TestCase):
         pb.setup()
         pb.run_driver()
         pb.cleanup()
-        return pb, case_recorder_filename
 
     @unittest.skipIf(OPENTURNS_NOT_INSTALLED, "OpenTURNS not installed")
     def test_openturns_doe_driver(self):
@@ -34,7 +33,7 @@ class TestOpenturnsDoeDriver(unittest.TestCase):
         driver = OpenturnsDOEDriver(
             n_samples=ns, distribution=ot.ComposedDistribution(dists)
         )
-        TestOpenturnsDoeDriver.run_driver("mc", driver)
+        TestOpenturnsDoeDriver.run_driver("dist", driver)
         cases = driver.get_cases()
         self.assertEqual((100, 3), cases.shape)
 
@@ -47,7 +46,7 @@ class TestOpenturnsDoeDriver(unittest.TestCase):
         )
 
         with self.assertRaises(RuntimeError):
-            TestOpenturnsDoeDriver.run_driver("mc", driver)
+            TestOpenturnsDoeDriver.run_driver("bad", driver)
 
 
 if __name__ == "__main__":
