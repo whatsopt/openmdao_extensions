@@ -1,6 +1,5 @@
 import numpy as np
 import traceback
-from packaging import version
 
 from openmdao.core.driver import Driver, RecordingDebugging
 from openmdao.core.analysis_error import AnalysisError
@@ -26,9 +25,7 @@ def to_list(l, size):
 
 
 class EgoboxEgorDriver(Driver):
-    """
-    OpenMDAO driver for egobox optimizer
-    """
+    """OpenMDAO driver for egobox optimizer"""
 
     def __init__(self, **kwargs):
         """
@@ -137,7 +134,7 @@ class EgoboxEgorDriver(Driver):
     def _initialize_vars(self):
         variables = []
         desvars = self._designvars
-        for name, meta in desvars.items():
+        for _, meta in desvars.items():
             if meta["size"] > 1:
                 if np.isscalar(meta["lower"]):
                     variables += [
@@ -171,7 +168,6 @@ class EgoboxEgorDriver(Driver):
             Dictionary to define specific tolerance for eq constraints
             {'[groupName]': [tol]} Default tol = 1e-5
         """
-        n_cstrs = 0.0
         con_meta = self._cons
 
         self.ieq_cons = {
