@@ -168,13 +168,13 @@ class OneraSegoDriver(Driver):
         i = 0
         for name, meta in self._designvars.items():
             size = meta["size"]
-            self.set_design_var(name, x_best[i : i + size])
+            self.set_design_var(name, x_best[0][i : i + size])
             i += size
 
         with RecordingDebugging(
             self.options["optimizer"], self.iter_count, self
         ) as rec:
-            model._solve_nonlinear()
+            model.run_solve_nonlinear()
             rec.abs = 0.0
             rec.rel = 0.0
         self.iter_count += 1
