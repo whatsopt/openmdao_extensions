@@ -27,9 +27,9 @@ jobs:
         python -m pip install black pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install .
-#    - name: Format with black
-#      run: |
-#        black --check .
+    - name: Format with black
+      run: |
+        black --check .
     - name: Test with pytest
       run: |
         pytest
