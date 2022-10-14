@@ -197,7 +197,6 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             is_rtol_converged = (rerrs < self._convrg_rtols).all()
         else:
             is_rtol_converged = norm / norm0 < self.options["rtol"]
-        # print(is_rtol_converged)    
         return is_rtol_converged
 
     def _iter_get_norm(self):
@@ -210,8 +209,6 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             norm.
         """
         system = self._system()
-        
-        # print(system._residuals._views_flat.keys())   
         if self._convrg_vars:
             total = []
             for name in self._convrg_vars:
