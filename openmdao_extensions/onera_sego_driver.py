@@ -1,10 +1,8 @@
 import numpy as np
 import traceback
-from packaging import version
 
 from openmdao.core.driver import Driver, RecordingDebugging
 from openmdao.core.analysis_error import AnalysisError
-from openmdao import __version__ as OPENMDAO_VERSION
 
 ONERASEGO_NOT_INSTALLED = False
 try:
@@ -87,10 +85,8 @@ class OneraSegoDriver(Driver):
             Dictionary to define specific tolerance for ieq constraints
             {'[groupName]': [tol]} Default tol = 1e-5
         """
-        if version.parse(OPENMDAO_VERSION) > version.parse("2.9.1"):
-            model = self._problem().model
-        else:
-            model = self._problem.model
+        model = self._problem().model
+
         path_hs = ""
         self.eq_tol = eq_tol
         self.ieq_tol = ieq_tol
@@ -322,10 +318,7 @@ class OneraSegoDriver(Driver):
         """
         fail = False
         res = np.zeros(1 + self._n_mapped_con)
-        if version.parse(OPENMDAO_VERSION) > version.parse("2.9.1"):
-            model = self._problem().model
-        else:
-            model = self._problem.model
+        model = self._problem().model
 
         try:
             # Pass in new parameters

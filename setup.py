@@ -38,7 +38,7 @@ metadata = dict(
     license="Apache License, Version 2.0",
     classifiers=[_f for _f in CLASSIFIERS.split("\n") if _f],
     packages=["openmdao_extensions"],
-    install_requires=["openmdao"],
+    install_requires=["openmdao>=3.0.0"],
     python_requires=">=3.7",
     zip_safe=True,
     url="https://github.com/OneraHub/openmdao_extensions",

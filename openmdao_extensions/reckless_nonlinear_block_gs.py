@@ -2,12 +2,10 @@
 
 import os
 import numpy as np
-from packaging import version
 
 from openmdao.core.analysis_error import AnalysisError
 from openmdao.recorders.recording_iteration_stack import Recording
 from openmdao.api import NonlinearBlockGS
-from openmdao import __version__ as OPENMDAO_VERSION
 
 
 class RecklessNonlinearBlockGS(NonlinearBlockGS):
@@ -101,10 +99,7 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             self._mpi_print(self._iter_count, norm, norm / norm0)
             is_rtol_converged = self._is_rtol_converged(norm, norm0)
 
-        if version.parse(OPENMDAO_VERSION) > version.parse("2.9.1"):
-            system = self._system()
-        else:
-            system = self._system
+        system = self._system()
         if system.comm.rank == 0 or os.environ.get("USE_PROC_FILES"):
             prefix = self._solver_info.prefix + self.SOLVER
             is_rtol_converged = self._is_rtol_converged(norm, norm0)
@@ -138,16 +133,10 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
                     )
 
                 # Raise AnalysisError if requested.
-                if version.parse(OPENMDAO_VERSION) > version.parse("2.9.1"):
-                    if self.options["err_on_non_converge"]:
-                        raise AnalysisError(
-                            msg.format(self.SOLVER, system.pathname, self._iter_count)
-                        )
-                else:
-                    if self.options["err_on_maxiter"]:
-                        raise AnalysisError(
-                            msg.format(self.SOLVER, system.pathname, self._iter_count)
-                        )
+                if self.options["err_on_non_converge"]:
+                    raise AnalysisError(
+                        msg.format(self.SOLVER, system.pathname, self._iter_count)
+                    )
 
             # Solver converged
             elif iprint == 1:
@@ -196,10 +185,7 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
         bool
             whether convergence is reached regarding relative error tolerance
         """
-        if version.parse(OPENMDAO_VERSION) > version.parse("2.9.1"):
-            system = self._system()
-        else:
-            system = self._system
+        system = self._system()
         if self._convrg_vars:
             nbvars = len(self._convrg_vars)
             rerrs = np.ones(nbvars)
@@ -223,10 +209,7 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
         float
             norm.
         """
-        if version.parse(OPENMDAO_VERSION) > version.parse("2.9.1"):
-            system = self._system()
-        else:
-            system = self._system
+        system = self._system()
         
         # print(system._residuals._views_flat.keys())   
         if self._convrg_vars:
