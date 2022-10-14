@@ -8,6 +8,7 @@ from setuptools import setup
 
 from os import path
 from io import open
+from openmdao_extensions import __version__
 
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
@@ -29,7 +30,7 @@ Operating System :: MacOS
 
 metadata = dict(
     name="openmdao_extensions",
-    version="1.1.0",
+    version=__version__,
     description="Additional solvers and drivers for OpenMDAO framework",
     long_description=long_description,
     long_description_content_type="text/markdown",
