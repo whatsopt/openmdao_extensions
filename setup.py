@@ -8,6 +8,7 @@ from setuptools import setup
 
 from os import path
 from io import open
+from openmdao_extensions import __version__
 
 this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
@@ -29,7 +30,7 @@ Operating System :: MacOS
 
 metadata = dict(
     name="openmdao_extensions",
-    version="1.1.0",
+    version=__version__,
     description="Additional solvers and drivers for OpenMDAO framework",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -38,7 +39,7 @@ metadata = dict(
     license="Apache License, Version 2.0",
     classifiers=[_f for _f in CLASSIFIERS.split("\n") if _f],
     packages=["openmdao_extensions"],
-    install_requires=["openmdao"],
+    install_requires=["openmdao>=3.0.0"],
     python_requires=">=3.7",
     zip_safe=True,
     url="https://github.com/OneraHub/openmdao_extensions",
