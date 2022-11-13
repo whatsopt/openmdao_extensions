@@ -1,23 +1,28 @@
 import os
 import unittest
-from openmdao.api import SqliteRecorder, CaseReader
-from openmdao.test_suite.components.sellar import SellarProblem
+import openmdao.api as om
+from sellar_int.sellar import Sellar
 from openmdao_extensions.egobox_doe_driver import EgoboxDOEDriver
 from openmdao_extensions.egobox_doe_driver import EGOBOX_NOT_INSTALLED
 
 
 class TestEgoboxDoeDriver(unittest.TestCase):
     def assert_case_generation(self, n, driver):
-        pb = SellarProblem()
+
+        pb = om.Problem(Sellar())
+
+        pb.model.add_design_var("x", lower=0, upper=10)
+        pb.model.add_design_var("z", lower=0, upper=10)
         pb.driver = driver
         case_recorder_filename = "test_egobox_doe_driver_{}.sqlite".format(n)
-        recorder = SqliteRecorder(case_recorder_filename)
+        recorder = om.SqliteRecorder(case_recorder_filename)
         pb.driver.add_recorder(recorder)
+
         pb.setup()
         pb.run_driver()
         pb.cleanup()
 
-        reader = CaseReader(case_recorder_filename)
+        reader = om.CaseReader(case_recorder_filename)
         cases = reader.list_cases("driver")
         os.remove(case_recorder_filename)
         self.assertEqual(len(cases), n)

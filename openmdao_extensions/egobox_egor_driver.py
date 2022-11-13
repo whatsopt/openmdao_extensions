@@ -80,7 +80,7 @@ class EgoboxEgorDriver(Driver):
         self.iter_count += 1
 
         # Format design variables to suit segomoe implementation
-        self.xspecs = self._initialize_vars()
+        self.xspecs = self._initialize_vars(model)
 
         # Format constraints to suit segomoe implementation
         self.n_cstr = self._initialize_cons()
@@ -129,31 +129,33 @@ class EgoboxEgorDriver(Driver):
 
         return True
 
-    def _initialize_vars(self):
+    def _initialize_vars(self, model):
+        for name, meta in self._designvars.items():
+            infos = model.get_io_metadata(includes=name)
+            dvs_int = {}
+            for absname in infos:
+                if name == infos[absname]["prom_name"] and (
+                    infos[absname]["tags"] & {"Integer"}
+                ):
+                    dvs_int[name] = egx.Vtype(egx.Vtype.INTEGER)
+
         variables = []
         desvars = self._designvars
-        for _, meta in desvars.items():
+        for name, meta in desvars.items():
+            vartype = dvs_int.get(name, egx.Vtype(egx.Vtype.FLOAT))
             if meta["size"] > 1:
                 if np.isscalar(meta["lower"]):
                     variables += [
-                        egx.Vspec(
-                            egx.Vtype(egx.Vtype.FLOAT), [meta["lower"], meta["upper"]]
-                        )
+                        egx.Vspec(vartype, [meta["lower"], meta["upper"]])
                         for i in range(meta["size"])
                     ]
                 else:
                     variables += [
-                        egx.Vspec(
-                            egx.Vtype(egx.Vtype.FLOAT), [meta["lower"], meta["upper"]]
-                        )
+                        egx.Vspec(vartype, [meta["lower"], meta["upper"]])
                         for i in range(meta["size"])
                     ]
             else:
-                variables += [
-                    egx.Vspec(
-                        egx.Vtype(egx.Vtype.FLOAT), [meta["lower"], meta["upper"]]
-                    )
-                ]
+                variables += [egx.Vspec(vartype, [meta["lower"], meta["upper"]])]
         return variables
 
     def _initialize_cons(self, eq_tol=None, ieq_tol=None):

@@ -1,0 +1,12 @@
+# This file contains recorded state from wop pull/update commands
+# DO NOT EDIT unless you know what you are doing
+# Version history:
+# * version 2: use toml format, add wop_format_version
+# * version 1: initial format "key: val"
+# * version 0: no wop file
+#
+wop_format_version = 2
+whatsopt_url = "http://localhost:3000"
+analysis_id = 4
+framework = "openmdao"
+pull_mode = "plain"

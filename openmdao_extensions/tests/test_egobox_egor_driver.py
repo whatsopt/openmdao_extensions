@@ -1,10 +1,7 @@
 import os
 import unittest
-from openmdao.api import (
-    Problem,
-    SqliteRecorder,
-    CaseReader,
-)
+import openmdao.api as om
+from sellar_int.sellar import Sellar
 from openmdao.test_suite.components.sellar_feature import SellarMDA
 from openmdao_extensions.egobox_egor_driver import EgoboxEgorDriver
 from openmdao_extensions.egobox_egor_driver import EGOBOX_NOT_INSTALLED
@@ -21,7 +18,7 @@ class TestEgor(unittest.TestCase):
 
     @unittest.skipIf(EGOBOX_NOT_INSTALLED, "egobox is not installed")
     def test_sellar(self):
-        self.pb = pb = Problem(SellarMDA())
+        self.pb = pb = om.Problem(SellarMDA())
         pb.model.add_design_var("x", lower=0, upper=10)
         pb.model.add_design_var("z", lower=0, upper=10)
         pb.model.add_objective("obj")
@@ -30,19 +27,40 @@ class TestEgor(unittest.TestCase):
         pb.driver = EgoboxEgorDriver(optimizer="EGOR")
         pb.driver.opt_settings["maxiter"] = 10
         self.case_recorder_filename = "test_egobox_driver_sellar.sqlite"
-        recorder = SqliteRecorder(self.case_recorder_filename)
+        recorder = om.SqliteRecorder(self.case_recorder_filename)
         pb.model.add_recorder(recorder)
         pb.setup()
         self.pb.run_driver()
         self.assertTrue(os.path.exists(self.case_recorder_filename))
-        reader = CaseReader(self.case_recorder_filename)
+        reader = om.CaseReader(self.case_recorder_filename)
         for case_id in reader.list_cases():
             case = reader.get_case(case_id)
             print(case.outputs["obj"])
 
     @unittest.skipIf(EGOBOX_NOT_INSTALLED, "egobox is not installed")
+    def test_sellar_int(self):
+        self.pb = pb = om.Problem(SellarMDA())
+        pb.model.add_design_var("x", lower=0, upper=10)
+        pb.model.add_design_var("z", lower=0, upper=10)
+        pb.model.add_objective("obj")
+        pb.model.add_constraint("con1", upper=0)
+        pb.model.add_constraint("con2", upper=0)
+        pb.driver = EgoboxEgorDriver(optimizer="EGOR")
+        pb.driver.opt_settings["maxiter"] = 10
+        self.case_recorder_filename = "test_egobox_driver_sellar_int.sqlite"
+        recorder = om.SqliteRecorder(self.case_recorder_filename)
+        pb.model.add_recorder(recorder)
+        pb.setup()
+        self.pb.run_driver()
+        self.assertTrue(os.path.exists(self.case_recorder_filename))
+        reader = om.CaseReader(self.case_recorder_filename)
+        for case_id in reader.list_cases():
+            case = reader.get_case(case_id)
+            print(f"obj = {case.outputs['obj']}")
+
+    @unittest.skipIf(EGOBOX_NOT_INSTALLED, "egobox is not installed")
     def test_branin(self):
-        self.pb = pb = Problem(BraninMDA())
+        self.pb = pb = om.Problem(BraninMDA())
         pb.model.add_design_var("x1", lower=-5, upper=10)
         pb.model.add_design_var("x2", lower=0, upper=15)
         pb.model.add_objective("obj")
@@ -52,7 +70,7 @@ class TestEgor(unittest.TestCase):
 
     @unittest.skipIf(EGOBOX_NOT_INSTALLED, "egobox is not installed")
     def test_ackley(self):
-        self.pb = pb = Problem(AckleyMDA())
+        self.pb = pb = om.Problem(AckleyMDA())
         pb.model.add_design_var("x", lower=-32.768, upper=32.768)
         pb.model.add_objective("obj")
         self.case_recorder_filename = "test_egobox_driver_ackley.sqlite"
@@ -62,12 +80,12 @@ class TestEgor(unittest.TestCase):
         pb.driver = EgoboxEgorDriver()
         pb.driver.options["optimizer"] = "EGOR"
         pb.driver.opt_settings["maxiter"] = 10
-        recorder = SqliteRecorder(self.case_recorder_filename)
+        recorder = om.SqliteRecorder(self.case_recorder_filename)
         pb.model.add_recorder(recorder)
         pb.setup()
         self.pb.run_driver()
         self.assertTrue(os.path.exists(self.case_recorder_filename))
-        reader = CaseReader(self.case_recorder_filename)
+        reader = om.CaseReader(self.case_recorder_filename)
         for case_id in reader.list_cases():
             case = reader.get_case(case_id)
             print(case.outputs["obj"])
