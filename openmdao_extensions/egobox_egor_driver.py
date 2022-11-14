@@ -37,6 +37,7 @@ class EgoboxEgorDriver(Driver):
         # What we support
         self.supports["inequality_constraints"] = True
         self.supports["linear_constraints"] = True
+        self.supports["integer_design_vars"] = True
 
         # What we don't support
         self.supports["equality_constraints"] = False
@@ -46,7 +47,6 @@ class EgoboxEgorDriver(Driver):
         self.supports["simultaneous_derivatives"] = False
         self.supports["total_jac_sparsity"] = False
         self.supports["gradients"] = False
-        self.supports["integer_design_vars"] = False
 
         self.opt_settings = {}
 
@@ -67,12 +67,10 @@ class EgoboxEgorDriver(Driver):
         model = self._problem().model
 
         self.iter_count = 0
-        self.name = "egobox_optimizer_egor"
+        self.name = f"onera_optimizer_{self.options['optimizer'].lower()}"
 
         # Initial Run
-        with RecordingDebugging(
-            self.options["optimizer"], self.iter_count, self
-        ) as rec:
+        with RecordingDebugging(self.name, self.iter_count, self) as rec:
             # Initial Run
             model._solve_nonlinear()
             rec.abs = 0.0
@@ -80,7 +78,7 @@ class EgoboxEgorDriver(Driver):
         self.iter_count += 1
 
         # Format design variables to suit segomoe implementation
-        self.xspecs = self._initialize_vars()
+        self.xspecs = self._initialize_vars(model)
 
         # Format constraints to suit segomoe implementation
         self.n_cstr = self._initialize_cons()
@@ -97,7 +95,6 @@ class EgoboxEgorDriver(Driver):
         dim = 0
         for name, meta in self._designvars.items():
             dim += meta["size"]
-        print("Designvars dimension: ", dim)
         if dim > 10:
             self.optim_settings["kpls_dim"] = 3
 
@@ -119,9 +116,7 @@ class EgoboxEgorDriver(Driver):
             self.set_design_var(name, res.x_opt[i : i + size])
             i += size
 
-        with RecordingDebugging(
-            self.options["optimizer"], self.iter_count, self
-        ) as rec:
+        with RecordingDebugging(self.name, self.iter_count, self) as rec:
             model._solve_nonlinear()
             rec.abs = 0.0
             rec.rel = 0.0
@@ -129,31 +124,33 @@ class EgoboxEgorDriver(Driver):
 
         return True
 
-    def _initialize_vars(self):
+    def _initialize_vars(self, model):
+        dvs_int = {}
+        for name, meta in self._designvars.items():
+            infos = model.get_io_metadata(includes=name)
+            for absname in infos:
+                if name == infos[absname]["prom_name"] and (
+                    infos[absname]["tags"] & {"wop:int"}
+                ):
+                    dvs_int[name] = egx.Vtype(egx.Vtype.INT)
+
         variables = []
         desvars = self._designvars
-        for _, meta in desvars.items():
+        for name, meta in desvars.items():
+            vartype = dvs_int.get(name, egx.Vtype(egx.Vtype.FLOAT))
             if meta["size"] > 1:
                 if np.isscalar(meta["lower"]):
                     variables += [
-                        egx.Vspec(
-                            egx.Vtype(egx.Vtype.FLOAT), [meta["lower"], meta["upper"]]
-                        )
+                        egx.Vspec(vartype, [meta["lower"], meta["upper"]])
                         for i in range(meta["size"])
                     ]
                 else:
                     variables += [
-                        egx.Vspec(
-                            egx.Vtype(egx.Vtype.FLOAT), [meta["lower"], meta["upper"]]
-                        )
+                        egx.Vspec(vartype, [meta["lower"], meta["upper"]])
                         for i in range(meta["size"])
                     ]
             else:
-                variables += [
-                    egx.Vspec(
-                        egx.Vtype(egx.Vtype.FLOAT), [meta["lower"], meta["upper"]]
-                    )
-                ]
+                variables += [egx.Vspec(vartype, [meta["lower"], meta["upper"]])]
         return variables
 
     def _initialize_cons(self, eq_tol=None, ieq_tol=None):
