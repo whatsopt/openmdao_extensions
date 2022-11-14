@@ -26,14 +26,13 @@ class EgoboxDOEGenerator(DOEGenerator):
         self.n_cases = n_cases
 
     def __call__(self, design_vars, model=None):
-        print("CCCC", design_vars)
         x_specs = []
         for name, meta in design_vars.items():
             infos = model.get_io_metadata(includes=name)
             dvs_int = {}
             for absname in infos:
                 if name == infos[absname]["prom_name"] and (
-                    infos[absname]["tags"] & {"Integer"}
+                    infos[absname]["tags"] & {"wop:int"}
                 ):
                     dvs_int[name] = egx.Vtype(egx.Vtype.INT)
 
@@ -54,16 +53,11 @@ class EgoboxDOEGenerator(DOEGenerator):
                     p_high = meta_high
 
                 if name in dvs_int:
-                    print(">> add int")
                     x_specs.append(egx.Vspec(egx.Vtype(egx.Vtype.INT), [p_low, p_high]))
                 else:
-                    print(">> add float")
                     x_specs.append(
                         egx.Vspec(egx.Vtype(egx.Vtype.FLOAT), [p_low, p_high])
                     )
-        print("*****************************")
-        print(x_specs)
-        print("*****************************")
         cases = egx.lhs(x_specs, self.n_cases)
         sample = []
         for i in range(cases.shape[0]):

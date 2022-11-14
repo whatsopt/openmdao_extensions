@@ -91,7 +91,7 @@ class OneraSegoDriver(Driver):
         self.eq_tol = eq_tol
         self.ieq_tol = ieq_tol
         self.iter_count = 0
-        self.name = "onera_optimizer_segomoe"
+        self.name = f"onera_optimizer_{self.options['optimizer'].lower()}"
         self._sego_vars = []
         self._sego_cons = []
         self._map_con = {}
