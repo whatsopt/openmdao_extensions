@@ -34,7 +34,7 @@ class EgoboxDOEGenerator(DOEGenerator):
                 if name == infos[absname]["prom_name"] and (
                     infos[absname]["tags"] & {"wop:int"}
                 ):
-                    dvs_int[name] = egx.Vtype(egx.Vtype.INT)
+                    dvs_int[name] = egx.XType(egx.XType.INT)
 
             size = meta["size"]
             meta_low = meta["lower"]
@@ -53,10 +53,10 @@ class EgoboxDOEGenerator(DOEGenerator):
                     p_high = meta_high
 
                 if name in dvs_int:
-                    x_specs.append(egx.Vspec(egx.Vtype(egx.Vtype.INT), [p_low, p_high]))
+                    x_specs.append(egx.XSpec(egx.XType(egx.XType.INT), [p_low, p_high]))
                 else:
                     x_specs.append(
-                        egx.Vspec(egx.Vtype(egx.Vtype.FLOAT), [p_low, p_high])
+                        egx.XSpec(egx.XType(egx.XType.FLOAT), [p_low, p_high])
                     )
         cases = egx.lhs(x_specs, self.n_cases)
         sample = []

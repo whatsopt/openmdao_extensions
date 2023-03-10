@@ -8,7 +8,6 @@ from openmdao_extensions.egobox_doe_driver import EGOBOX_NOT_INSTALLED
 
 class TestEgoboxDoeDriver(unittest.TestCase):
     def assert_case_generation(self, n, driver):
-
         pb = om.Problem(Sellar())
 
         pb.model.add_design_var("x", lower=0, upper=10)
