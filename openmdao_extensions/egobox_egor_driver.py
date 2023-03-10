@@ -107,7 +107,7 @@ class EgoboxEgorDriver(Driver):
         )
 
         # Run the optim
-        res = egor.minimize(n_eval=n_iter)
+        res = egor.minimize(n_iter=n_iter)
 
         # Set optimal parameters
         i = 0
@@ -132,25 +132,25 @@ class EgoboxEgorDriver(Driver):
                 if name == infos[absname]["prom_name"] and (
                     infos[absname]["tags"] & {"wop:int"}
                 ):
-                    dvs_int[name] = egx.Vtype(egx.Vtype.INT)
+                    dvs_int[name] = egx.XType(egx.XType.INT)
 
         variables = []
         desvars = self._designvars
         for name, meta in desvars.items():
-            vartype = dvs_int.get(name, egx.Vtype(egx.Vtype.FLOAT))
+            vartype = dvs_int.get(name, egx.XType(egx.XType.FLOAT))
             if meta["size"] > 1:
                 if np.isscalar(meta["lower"]):
                     variables += [
-                        egx.Vspec(vartype, [meta["lower"], meta["upper"]])
+                        egx.XSpec(vartype, [meta["lower"], meta["upper"]])
                         for i in range(meta["size"])
                     ]
                 else:
                     variables += [
-                        egx.Vspec(vartype, [meta["lower"], meta["upper"]])
+                        egx.XSpec(vartype, [meta["lower"], meta["upper"]])
                         for i in range(meta["size"])
                     ]
             else:
-                variables += [egx.Vspec(vartype, [meta["lower"], meta["upper"]])]
+                variables += [egx.XSpec(vartype, [meta["lower"], meta["upper"]])]
         return variables
 
     def _initialize_cons(self, eq_tol=None, ieq_tol=None):
