@@ -35,6 +35,7 @@ class EgoboxEgorDriver(Driver):
             raise RuntimeError("egobox library is not installed.")
 
         # What we support
+        self.supports["optimization"] = True
         self.supports["inequality_constraints"] = True
         self.supports["linear_constraints"] = True
         self.supports["integer_design_vars"] = True
@@ -47,6 +48,7 @@ class EgoboxEgorDriver(Driver):
         self.supports["simultaneous_derivatives"] = False
         self.supports["total_jac_sparsity"] = False
         self.supports["gradients"] = False
+        self.supports._read_only = True
 
         self.opt_settings = {}
 
@@ -67,7 +69,7 @@ class EgoboxEgorDriver(Driver):
         model = self._problem().model
 
         self.iter_count = 0
-        self.name = f"onera_optimizer_{self.options['optimizer'].lower()}"
+        self.name = f"egobox_optimizer_{self.options['optimizer'].lower()}"
 
         # Initial Run
         with RecordingDebugging(self.name, self.iter_count, self) as rec:

@@ -40,6 +40,7 @@ class OneraSegoDriver(Driver):
             raise RuntimeError("Onera SEGOMOE library is not installed.")
 
         # What we support
+        self.supports["optimization"] = True
         self.supports["inequality_constraints"] = True
         self.supports["equality_constraints"] = True
         self.supports["two_sided_constraints"] = True
@@ -52,6 +53,7 @@ class OneraSegoDriver(Driver):
         self.supports["simultaneous_derivatives"] = False
         self.supports["total_jac_sparsity"] = False
         self.supports["gradients"] = False
+        self.supports._read_only = True
 
         self.opt_settings = {}
 
