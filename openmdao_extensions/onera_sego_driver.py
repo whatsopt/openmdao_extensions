@@ -104,7 +104,7 @@ class OneraSegoDriver(Driver):
             self.options["optimizer"], self.iter_count, self
         ) as rec:
             # Initial Run
-            model._solve_nonlinear()
+            model.run_solve_nonlinear()
             rec.abs = 0.0
             rec.rel = 0.0
         self.iter_count += 1
