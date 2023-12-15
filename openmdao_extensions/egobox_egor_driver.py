@@ -86,8 +86,9 @@ class EgoboxEgorDriver(Driver):
         self.n_cstr = self._initialize_cons()
 
         # Format option dictionary to suit Egor implementation
+        cstr_tol = [1e-4] * self.n_cstr if self.n_cstr else []
         optim_settings = {
-            "cstr_tol": 1e-6,
+            "cstr_tol": cstr_tol,
         }
         n_iter = self.opt_settings["maxiter"]
         optim_settings.update(
@@ -102,14 +103,13 @@ class EgoboxEgorDriver(Driver):
 
         # Instanciate a SEGO optimizer
         egor = Egor(
-            self._objfunc,
             xspecs=self.xspecs,
             n_cstr=self.n_cstr,
             **optim_settings,
         )
 
         # Run the optim
-        res = egor.minimize(n_iter=n_iter)
+        res = egor.minimize(self._objfunc, max_iters=n_iter)
 
         # Set optimal parameters
         i = 0
@@ -139,7 +139,7 @@ class EgoboxEgorDriver(Driver):
         variables = []
         desvars = self._designvars
         for name, meta in desvars.items():
-            vartype = dvs_int.get(name, egx.XType(egx.XType.FLOAT))
+            vartype = dvs_int.get(name, egx.XType.FLOAT)
             if meta["size"] > 1:
                 if np.isscalar(meta["lower"]):
                     variables += [

@@ -3,7 +3,7 @@ import numpy as np
 
 from openmdao.api import Problem, IndepVarComp
 from openmdao.test_suite.components.sellar import SellarDis1, SellarDis2
-from openmdao.utils.assert_utils import assert_rel_error
+from openmdao.utils.assert_utils import assert_near_equal
 from openmdao_extensions.reckless_nonlinear_block_gs import RecklessNonlinearBlockGS
 
 
@@ -47,8 +47,8 @@ class TestRecklessNLBGS(unittest.TestCase):
         prob.run_model()
         nb1 = nlbgs._iter_count
 
-        assert_rel_error(self, prob["y1"], 25.58830273, 0.00001)
-        assert_rel_error(self, prob["y2"], 12.05848819, 0.00001)
+        assert_near_equal(prob["y1"], 25.58830273, 0.00001)
+        assert_near_equal(prob["y2"], 12.05848819, 0.00001)
 
         nlbgs.options["convrg_vars"] = ["d1.y1", "d2.y2"]
 
@@ -64,8 +64,8 @@ class TestRecklessNLBGS(unittest.TestCase):
         nb3 = nlbgs._iter_count
         self.assertLess(nb3, nb2)
 
-        assert_rel_error(self, prob["y1"], 25.58830273, 0.00001)
-        assert_rel_error(self, prob["y2"], 12.05848819, 0.00001)
+        assert_near_equal(prob["y1"], 25.58830273, 0.00001)
+        assert_near_equal(prob["y2"], 12.05848819, 0.00001)
 
     def test_bad_size(self):
         self.nlbgs.options["convrg_vars"] = ["d1.y1", "d2.y2"]
