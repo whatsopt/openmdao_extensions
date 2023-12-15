@@ -1,5 +1,5 @@
 [![Tests](https://github.com/OneraHub/openmdao_extensions/workflows/Tests/badge.svg)](https://github.com/OneraHub/openmdao_extensions/actions?query=workflow%3ATests)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/623ace43ad8e4f9ebcaed4c2c2d51fdd)](https://www.codacy.com/gh/OneraHub/openmdao_extensions/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=OneraHub/openmdao_extensions&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/54f346b4094a42f081c4f674e2990aee)](https://app.codacy.com/gh/whatsopt/openmdao_extensions/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 # OpenMDAO Extensions
