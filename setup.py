@@ -40,7 +40,12 @@ metadata = dict(
     classifiers=[_f for _f in CLASSIFIERS.split("\n") if _f],
     packages=["openmdao_extensions"],
     install_requires=["openmdao>=3.0.0"],
-    python_requires=">=3.7",
+    extras_require={
+        "egobox": [
+            "egobox~=0.14.0",
+        ]
+    },
+    python_requires=">=3.8",
     zip_safe=True,
     url="https://github.com/OneraHub/openmdao_extensions",
     download_url="https://github.com/OneraHub/openmdao_extensions/releases",
