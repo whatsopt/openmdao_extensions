@@ -75,34 +75,58 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
         self._mpi_print_header()
 
         self._iter_count = 0
-        norm0, norm = self._iter_initialize()
+        self._iter_initialize()
 
-        self._norm0 = norm0
+        if self._convrg_vars:
+            # get initial value of convrg_vars
+            norm, val_convrg_vars_minus1 = self._iter_get_norm()
+            ratio = 1
+        else:
+            norm = self._iter_get_norm()
+            norm0 = norm if norm != 0.0 else 1.0
+            ratio = norm / norm0
 
-        self._mpi_print(self._iter_count, norm, norm / norm0)
+        self._mpi_print(self._iter_count, norm, ratio)
+        is_rtol_converged = self._is_rtol_converged(ratio)
 
-        is_rtol_converged = self._is_rtol_converged(norm, norm0)
         while self._iter_count < maxiter and norm > atol and not is_rtol_converged:
             with Recording(type(self).__name__, self._iter_count, self) as rec:
                 self._single_iteration()
                 self._iter_count += 1
                 self._run_apply()
-                norm = self._iter_get_norm()
-                # With solvers, we want to record the norm AFTER the call, but the call needs to
-                # be wrapped in the with for stack purposes, so we locally assign  norm & norm0
-                # into the class.
-                rec.abs = norm
-                rec.rel = norm / norm0
 
-            if norm0 == 0:
-                norm0 = 1
-            self._mpi_print(self._iter_count, norm, norm / norm0)
-            is_rtol_converged = self._is_rtol_converged(norm, norm0)
+                if self._convrg_vars:
+                    norm, val_convrg_vars = self._iter_get_norm()
+                    rec.abs = norm
+                    rec.rel = (
+                        np.abs(val_convrg_vars - val_convrg_vars_minus1)
+                        / val_convrg_vars_minus1
+                    )
+                    ratio = (
+                        np.abs(val_convrg_vars - val_convrg_vars_minus1)
+                        / val_convrg_vars_minus1
+                    )
+                    ratio = np.max(ratio)
+
+                    val_convrg_vars_minus1 = val_convrg_vars
+                else:
+                    norm = self._iter_get_norm()
+                    # With solvers, we want to record the norm AFTER the call, but the call needs to
+                    # be wrapped in the with for stack purposes, so we locally assign  norm & norm0
+                    # into the class.
+                    rec.abs = norm
+                    rec.rel = norm / norm0
+                    ratio = norm / norm0
+                    if norm0 == 0:
+                        norm0 = 1
+
+            self._mpi_print(self._iter_count, norm, ratio)
+            is_rtol_converged = self._is_rtol_converged(ratio)
 
         system = self._system()
         if system.comm.rank == 0 or os.environ.get("USE_PROC_FILES"):
             prefix = self._solver_info.prefix + self.SOLVER
-            is_rtol_converged = self._is_rtol_converged(norm, norm0)
+            is_rtol_converged = self._is_rtol_converged(ratio)
             # Solver terminated early because a Nan in the norm doesn't satisfy the while-loop
             # conditionals.
             if np.isinf(norm) or np.isnan(norm):
@@ -163,13 +187,14 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             self._convrg_rtols = self.options["convrg_rtols"]
             if len(self._convrg_rtols) != len(self._convrg_vars):
                 raise RuntimeError(
-                    "Convergence rtols bad size : should be {}, "
-                    "found {}.".format(len(self._convrg_vars), len(self._convrg_rtols))
+                    "Convergence rtols bad size : should be {}, " "found {}.".format(
+                        len(self._convrg_vars), len(self._convrg_rtols)
+                    )
                 )
 
         return super(RecklessNonlinearBlockGS, self)._iter_initialize()
 
-    def _is_rtol_converged(self, norm, norm0):
+    def _is_rtol_converged(self, ratio):
         """
         Check convergence regarding relative error tolerance.
 
@@ -195,8 +220,9 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
                 residual = system._residuals._views[name]
                 rerrs[i] = np.linalg.norm(residual) / np.linalg.norm(outputs)
             is_rtol_converged = (rerrs < self._convrg_rtols).all()
+            is_rtol_converged = ratio < self.options["rtol"]
         else:
-            is_rtol_converged = norm / norm0 < self.options["rtol"]
+            is_rtol_converged = ratio < self.options["rtol"]
         return is_rtol_converged
 
     def _iter_get_norm(self):
@@ -211,9 +237,15 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
         system = self._system()
         if self._convrg_vars:
             total = []
-            for name in self._convrg_vars:
+            val_convrg_vars = np.zeros(len(self._convrg_vars))
+            for i, name in enumerate(self._convrg_vars):
                 total.append(system._residuals._views_flat[name])
+                val_convrg_vars[i] = np.linalg.norm(system._outputs._views[name])
             norm = np.linalg.norm(np.concatenate(total))
         else:
             norm = super(RecklessNonlinearBlockGS, self)._iter_get_norm()
-        return norm
+
+        if self._convrg_vars:
+            return norm, val_convrg_vars
+        else:
+            return norm
