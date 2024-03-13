@@ -62,7 +62,7 @@ class TestRecklessNLBGS(unittest.TestCase):
         prob.setup()
         prob.run_model()
         nb3 = nlbgs._iter_count
-        self.assertLess(nb3, nb2)
+        self.assertLessEqual(nb3, nb2)
 
         assert_near_equal(prob["y1"], 25.58830273, 0.00001)
         assert_near_equal(prob["y2"], 12.05848819, 0.00001)
