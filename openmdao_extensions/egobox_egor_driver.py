@@ -12,16 +12,16 @@ except ImportError:
     EGOBOX_NOT_INSTALLED = True
 
 
-def to_list(l, size):
-    if not (isinstance(l, np.ndarray) or isinstance(l, list)):
-        return [l] * size
-    diff_len = len(l) - size
+def to_list(lst, size):
+    if not (isinstance(lst, np.ndarray) or isinstance(lst, list)):
+        return [lst] * size
+    diff_len = len(lst) - size
     if diff_len > 0:
-        return l[0:size]
+        return lst[0:size]
     elif diff_len < 0:
-        return [l[0]] * size
+        return [lst[0]] * size
     else:
-        return l
+        return lst
 
 
 class EgoboxEgorDriver(Driver):
