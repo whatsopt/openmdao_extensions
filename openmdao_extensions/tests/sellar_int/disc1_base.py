@@ -6,8 +6,6 @@
 # analysis_id: 4
 
 
-import numpy as np
-from numpy import nan, inf
 import openmdao.api as om
 
 

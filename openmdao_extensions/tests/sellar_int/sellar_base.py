@@ -6,13 +6,10 @@
 # analysis_id: 4
 
 
-import numpy as np
-from numpy import nan, inf
 
 import openmdao.api as om
 from openmdao.api import NonlinearBlockGS
 from openmdao.api import ScipyKrylov
-from openmdao import __version__ as OPENMDAO_VERSION
 
 
 from .disc1 import Disc1
