@@ -1,7 +1,6 @@
 import os
 import unittest
 import openmdao.api as om
-from sellar_int.sellar import Sellar
 from openmdao.test_suite.components.sellar_feature import SellarMDA
 from openmdao_extensions.egobox_egor_driver import EgoboxEgorDriver
 from openmdao_extensions.egobox_egor_driver import EGOBOX_NOT_INSTALLED

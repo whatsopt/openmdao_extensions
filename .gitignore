@@ -107,3 +107,6 @@ venv.bak/
 
 # ignore openmdao reports
 **/reports
+
+# ruff
+**/.ruff_cache
