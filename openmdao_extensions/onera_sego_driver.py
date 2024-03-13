@@ -128,7 +128,7 @@ class OneraSegoDriver(Driver):
         optim_settings["grouped_eval"] = True
 
         # default model
-        mod_obj = {"corr": "squared_exponential", "regr": "constant", "normalize": True}
+        mod_obj = {"corr": "squar_exp", "regr": "constant", "normalize": True}
 
         dim = 0
         for name, meta in self._designvars.items():
@@ -137,10 +137,10 @@ class OneraSegoDriver(Driver):
         if dim > 10:
             n_components = 3
             mod_obj["n_components"] = n_components
-            mod_obj["type"] = "KrigKPLS" if dim > 20 else "KrigKPLSK"
+            mod_obj["name"] = "KPLS" if dim > 20 else "KPLSK"
         else:
             n_components = dim
-            mod_obj["type"] = "Krig"
+            mod_obj["name"] = "KRG"
         mod_obj["theta0"] = [1.0] * n_components
         mod_obj["thetaL"] = [0.1] * n_components
         mod_obj["thetaU"] = [10.0] * n_components

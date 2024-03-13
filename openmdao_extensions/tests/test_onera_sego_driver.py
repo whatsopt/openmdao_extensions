@@ -65,8 +65,8 @@ class TestSegoMoe(unittest.TestCase):
         # default model
         n_var = 2
         mod_obj = {
-            "type": "Krig",
-            "corr": "squared_exponential",
+            "name": "KRG",
+            "corr": "squar_exp",
             "regr": "constant",
             "theta0": [1.0] * n_var,
             "thetaL": [0.1] * n_var,
