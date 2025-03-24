@@ -216,8 +216,8 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             rerrs = np.ones(nbvars)
             outputs = np.ones(nbvars)
             for i, name in enumerate(self._convrg_vars):
-                outputs = system._outputs._views[name]
-                residual = system._residuals._views[name]
+                outputs = system._outputs._views[name][0]
+                residual = system._residuals._views[name][0]
                 rerrs[i] = np.linalg.norm(residual) / np.linalg.norm(outputs)
             is_rtol_converged = (rerrs < self._convrg_rtols).all()
             is_rtol_converged = ratio < self.options["rtol"]
@@ -241,7 +241,7 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             for i, name in enumerate(self._convrg_vars):
                 total.append(system._residuals._views_flat[name])
                 print("output=", system._outputs._views[name])
-                val_convrg_vars[i] = np.linalg.norm(system._outputs._views[name])
+                val_convrg_vars[i] = np.linalg.norm(system._outputs._views[name][0])
             print("total=", total)
             print("concat total=", np.concatenate(total))
             norm = np.linalg.norm(np.concatenate(total))
