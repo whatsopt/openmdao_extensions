@@ -6,6 +6,7 @@ import numpy as np
 from openmdao.core.analysis_error import AnalysisError
 from openmdao.recorders.recording_iteration_stack import Recording
 from openmdao.api import NonlinearBlockGS
+from openmdao import __version__ as openmdao_version
 
 
 class RecklessNonlinearBlockGS(NonlinearBlockGS):
@@ -216,8 +217,8 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             rerrs = np.ones(nbvars)
             outputs = np.ones(nbvars)
             for i, name in enumerate(self._convrg_vars):
-                outputs = system._outputs._views[name][0]
-                residual = system._residuals._views[name][0]
+                outputs = self._get_views_array(system._outputs._views[name])
+                residual = self._get_views_array(system._residuals._views[name])
                 rerrs[i] = np.linalg.norm(residual) / np.linalg.norm(outputs)
             is_rtol_converged = (rerrs < self._convrg_rtols).all()
             is_rtol_converged = ratio < self.options["rtol"]
@@ -240,7 +241,9 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             val_convrg_vars = np.zeros(len(self._convrg_vars))
             for i, name in enumerate(self._convrg_vars):
                 total.append(system._residuals._views_flat[name])
-                val_convrg_vars[i] = np.linalg.norm(system._outputs._views[name][0])
+                val_convrg_vars[i] = np.linalg.norm(
+                    self._get_views_array(system._outputs._views[name])
+                )
             norm = np.linalg.norm(np.concatenate(total))
         else:
             norm = super(RecklessNonlinearBlockGS, self)._iter_get_norm()
@@ -249,3 +252,12 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             return norm, val_convrg_vars
         else:
             return norm
+
+    @staticmethod
+    def _get_views_array(vector_views):
+        """Simple backward compatibility function as views change
+        from np.array to (np.array, bool) in openmdao 3.38"""
+        if openmdao_version > "3.37.0":
+            return vector_views[0]
+        else:
+            return vector_views
