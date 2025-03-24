@@ -42,7 +42,7 @@ metadata = dict(
     install_requires=["openmdao>=3.0.0"],
     extras_require={
         "egobox": [
-            "egobox~=0.14.0",
+            "egobox>=0.26.0",
         ]
     },
     python_requires=">=3.8",

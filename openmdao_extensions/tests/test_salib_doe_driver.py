@@ -10,11 +10,14 @@ class TestSalibDoeDriver(unittest.TestCase):
     @staticmethod
     def run_driver(name, driver):
         pb = SellarProblem()
-        case_recorder_filename = "test_salib_doe_{}.sqlite".format(name)
-        recorder = SqliteRecorder(case_recorder_filename)
         pb.driver = driver
-        pb.driver.add_recorder(recorder)
         pb.setup()
+
+        case_recorder_filename = "{}/test_salib_doe_{}.sqlite".format(
+            pb.get_outputs_dir(), name
+        )
+        recorder = SqliteRecorder(case_recorder_filename)
+        pb.driver.add_recorder(recorder)
         pb.run_driver()
         pb.cleanup()
         return pb, case_recorder_filename
