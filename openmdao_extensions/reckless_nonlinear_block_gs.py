@@ -240,10 +240,7 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             val_convrg_vars = np.zeros(len(self._convrg_vars))
             for i, name in enumerate(self._convrg_vars):
                 total.append(system._residuals._views_flat[name])
-                print("output=", system._outputs._views[name])
                 val_convrg_vars[i] = np.linalg.norm(system._outputs._views[name][0])
-            print("total=", total)
-            print("concat total=", np.concatenate(total))
             norm = np.linalg.norm(np.concatenate(total))
         else:
             norm = super(RecklessNonlinearBlockGS, self)._iter_get_norm()
