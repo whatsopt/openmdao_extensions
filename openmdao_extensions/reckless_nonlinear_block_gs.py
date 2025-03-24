@@ -187,7 +187,7 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             self._convrg_rtols = self.options["convrg_rtols"]
             if len(self._convrg_rtols) != len(self._convrg_vars):
                 raise RuntimeError(
-                    "Convergence rtols bad size : should be {}, " "found {}.".format(
+                    "Convergence rtols bad size : should be {}, found {}.".format(
                         len(self._convrg_vars), len(self._convrg_rtols)
                     )
                 )
@@ -240,7 +240,10 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             val_convrg_vars = np.zeros(len(self._convrg_vars))
             for i, name in enumerate(self._convrg_vars):
                 total.append(system._residuals._views_flat[name])
+                print("output=", system._outputs._views[name])
                 val_convrg_vars[i] = np.linalg.norm(system._outputs._views[name])
+            print("total=", total)
+            print("concat total=", np.concatenate(total))
             norm = np.linalg.norm(np.concatenate(total))
         else:
             norm = super(RecklessNonlinearBlockGS, self)._iter_get_norm()
