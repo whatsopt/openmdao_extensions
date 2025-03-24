@@ -10,10 +10,13 @@ class TestSmtDoeDriver(unittest.TestCase):
     def assert_case_generation(self, n, driver):
         pb = SellarProblem()
         pb.driver = driver
-        case_recorder_filename = "test_smt_doe_driver_{}.sqlite".format(n)
+        pb.setup()
+
+        case_recorder_filename = "{}/test_smt_doe_driver_{}.sqlite".format(
+            pb.get_outputs_dir(), n
+        )
         recorder = SqliteRecorder(case_recorder_filename)
         pb.driver.add_recorder(recorder)
-        pb.setup()
         pb.run_driver()
         pb.cleanup()
 

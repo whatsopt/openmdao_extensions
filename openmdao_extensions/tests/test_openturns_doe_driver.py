@@ -10,11 +10,15 @@ class TestOpenturnsDoeDriver(unittest.TestCase):
     @staticmethod
     def run_driver(name, driver):
         pb = SellarProblem()
-        case_recorder_filename = "test_openturns_doe_{}.sqlite".format(name)
+        pb.setup()
+
+        case_recorder_filename = "{}/test_openturns_doe_{}.sqlite".format(
+            pb.get_outputs_dir(), name
+        )
         recorder = SqliteRecorder(case_recorder_filename)
         pb.driver = driver
         pb.driver.add_recorder(recorder)
-        pb.setup()
+
         pb.run_driver()
         pb.cleanup()
 

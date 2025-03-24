@@ -29,11 +29,15 @@ class TestSegoMoe(unittest.TestCase):
         pb.model.add_constraint("con2", upper=0)
         pb.driver = OneraSegoDriver(optimizer="SEGOMOE")
         pb.driver.opt_settings["maxiter"] = 10
-        self.case_recorder_filename = "test_segomoe_driver_sellar.sqlite"
+        pb.setup()
+
+        self.case_recorder_filename = "{}/test_segomoe_driver_sellar.sqlite".format(
+            pb.get_outputs_dir()
+        )
         recorder = SqliteRecorder(self.case_recorder_filename)
         pb.model.add_recorder(recorder)
-        pb.setup()
         self.pb.run_driver()
+
         self.assertTrue(os.path.exists(self.case_recorder_filename))
         reader = CaseReader(self.case_recorder_filename)
         for case_id in reader.list_cases():
@@ -47,16 +51,16 @@ class TestSegoMoe(unittest.TestCase):
         pb.model.add_design_var("x2", lower=0, upper=15)
         pb.model.add_objective("obj")
         pb.model.add_constraint("con", upper=0)
-        self.case_recorder_filename = "test_segomoe_driver_branin.sqlite"
-        self._check_recorder_file(pb, cstr=True, filename=self.case_recorder_filename)
+        case_recorder_filename = "test_segomoe_driver_branin.sqlite"
+        self._check_recorder_file(pb, cstr=True, filename=case_recorder_filename)
 
     @unittest.skipIf(ONERASEGO_NOT_INSTALLED, "SEGOMOE is not installed")
     def test_ackley(self):
         self.pb = pb = Problem(AckleyMDA())
         pb.model.add_design_var("x", lower=-32.768, upper=32.768)
         pb.model.add_objective("obj")
-        self.case_recorder_filename = "test_segomoe_driver_ackley.sqlite"
-        self._check_recorder_file(pb, cstr=False, filename=self.case_recorder_filename)
+        case_recorder_filename = "test_segomoe_driver_ackley.sqlite"
+        self._check_recorder_file(pb, cstr=False, filename=case_recorder_filename)
 
     def _check_recorder_file(self, pb, cstr, filename):
         pb.driver = OneraSegoDriver()
@@ -77,9 +81,12 @@ class TestSegoMoe(unittest.TestCase):
         if cstr:
             model_type["con"] = mod_obj
         pb.driver.opt_settings["model_type"] = model_type
+        pb.setup()
+
+        self.case_recorder_file_name = "{}/{}".format(pb.get_outputs_dir(), filename)
         recorder = SqliteRecorder(self.case_recorder_filename)
         pb.model.add_recorder(recorder)
-        pb.setup()
+
         self.pb.run_driver()
         self.assertTrue(os.path.exists(self.case_recorder_filename))
         reader = CaseReader(self.case_recorder_filename)
