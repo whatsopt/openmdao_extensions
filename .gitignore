@@ -110,3 +110,6 @@ venv.bak/
 
 # ruff
 **/.ruff_cache
+
+# openmdao output
+**/*_out
