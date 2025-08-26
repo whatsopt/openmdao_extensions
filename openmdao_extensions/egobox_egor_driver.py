@@ -7,7 +7,7 @@ from openmdao.core.analysis_error import AnalysisError
 EGOBOX_NOT_INSTALLED = False
 try:
     import egobox as egx
-    from egobox import Egor
+    from egobox import Egor, GpConfig
 except ImportError:
     EGOBOX_NOT_INSTALLED = True
 
@@ -91,8 +91,15 @@ class EgoboxEgorDriver(Driver):
             "cstr_tol": cstr_tol,
         }
         n_iter = self.opt_settings["maxiter"]
+
+        # Manage gp_config special case: conf object GpConfig
+        gp_config_args = self.opt_settings.get("gp_config", {})
         optim_settings.update(
-            {k: v for k, v in self.opt_settings.items() if k != "maxiter"}
+            {
+                k: v
+                for k, v in self.opt_settings.items()
+                if k != "maxiter" and k != "gp_config"
+            }
         )
 
         dim = 0
@@ -101,9 +108,12 @@ class EgoboxEgorDriver(Driver):
         if dim > 10:
             self.optim_settings["kpls_dim"] = 3
 
+        gp_config = GpConfig(**gp_config_args)
+
         # Instanciate a SEGO optimizer
         egor = Egor(
             xspecs=self.xspecs,
+            gp_config=gp_config,
             n_cstr=self.n_cstr,
             **optim_settings,
         )
@@ -134,7 +144,7 @@ class EgoboxEgorDriver(Driver):
                 if name == infos[absname]["prom_name"] and (
                     infos[absname]["tags"] & {"wop:int"}
                 ):
-                    dvs_int[name] = egx.XType(egx.XType.INT)
+                    dvs_int[name] = egx.XType.INT
 
         variables = []
         desvars = self._designvars

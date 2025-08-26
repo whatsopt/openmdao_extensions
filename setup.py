@@ -42,10 +42,10 @@ metadata = dict(
     install_requires=["openmdao>=3.0.0"],
     extras_require={
         "egobox": [
-            "egobox>=0.26.0",
+            "egobox>=0.32.0",
         ]
     },
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     zip_safe=True,
     url="https://github.com/OneraHub/openmdao_extensions",
     download_url="https://github.com/OneraHub/openmdao_extensions/releases",

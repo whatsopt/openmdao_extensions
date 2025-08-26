@@ -240,7 +240,7 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
             total = []
             val_convrg_vars = np.zeros(len(self._convrg_vars))
             for i, name in enumerate(self._convrg_vars):
-                total.append(system._residuals._views_flat[name])
+                total.append(self._get_views_array(system._residuals._views[name]))
                 val_convrg_vars[i] = np.linalg.norm(
                     self._get_views_array(system._outputs._views[name])
                 )
@@ -255,9 +255,10 @@ class RecklessNonlinearBlockGS(NonlinearBlockGS):
 
     @staticmethod
     def _get_views_array(vector_views):
-        """Simple backward compatibility function as views change
-        from np.array to (np.array, bool) in openmdao 3.38"""
-        if openmdao_version > "3.37.0":
+        """Simple backward compatibility function as views changes in 3.38 then 3.40"""
+        if openmdao_version > "3.39.0":
+            return vector_views.flat
+        elif openmdao_version > "3.37.0":
             return vector_views[0]
         else:
             return vector_views
