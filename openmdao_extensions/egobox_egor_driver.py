@@ -150,19 +150,24 @@ class EgoboxEgorDriver(Driver):
         desvars = self._designvars
         for name, meta in desvars.items():
             vartype = dvs_int.get(name, egx.XType.FLOAT)
-            if meta["size"] > 1:
-                if np.isscalar(meta["lower"]):
-                    variables += [
-                        egx.XSpec(vartype, [meta["lower"], meta["upper"]])
-                        for i in range(meta["size"])
-                    ]
-                else:
-                    variables += [
-                        egx.XSpec(vartype, [meta["lower"], meta["upper"]])
-                        for i in range(meta["size"])
-                    ]
+            size = meta["size"]
+            meta_low = meta["lower"]
+            meta_high = meta["upper"]
+            if size > 1:
+                for j in range(size):
+                    if isinstance(meta_low, np.ndarray):
+                        p_low = meta_low[j]
+                    else:
+                        p_low = meta_low
+
+                    if isinstance(meta_high, np.ndarray):
+                        p_high = meta_high[j]
+                    else:
+                        p_high = meta_high
+
+                    variables += [egx.XSpec(vartype, [p_low, p_high])]
             else:
-                variables += [egx.XSpec(vartype, [meta["lower"], meta["upper"]])]
+                variables += [egx.XSpec(vartype, [meta_low, meta_high])]
         return variables
 
     def _initialize_cons(self, eq_tol=None, ieq_tol=None):
