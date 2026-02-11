@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openmdao_extensions"
+version = "1.4.0"
+description = "Additional solvers and drivers for OpenMDAO framework"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+authors = [{ name = "Rémi Lafage", email = "remi.lafage@onera.fr" }]
+keywords = ["openmdao", "openmdao_driver", "openmdao_nl_solver"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+]
+dependencies = ["openmdao>=3.0.0"]
+
+[project.optional-dependencies]
+egobox = ["egobox>=0.32.0"]
+
+[project.urls]
+Homepage = "https://github.com/OneraHub/openmdao_extensions"
+Download = "https://github.com/OneraHub/openmdao_extensions/releases"
+
+[project.entry-points.openmdao_driver]
+egoboxegordriver = "openmdao_extensions.egobox_egor_driver:EgoboxEgorDriver"
+onerasegodriver = "openmdao_extensions.onera_sego_driver:OneraSegoDriver"
+openturnsdoedriver = "openmdao_extensions.openturns_doe_driver:OpenturnsDOEDriver"
+salibdoedriver = "openmdao_extensions.salib_doe_driver:SalibDOEDriver"
+smtdoedriver = "openmdao_extensions.smt_doe_driver:SmtDOEDriver"
+
+[project.entry-points.openmdao_nl_solver]
+recklessnonlinearblockgs = "openmdao_extensions.reckless_nonlinear_block_gs:RecklessNonlinearBlockGS"
+
+[tool.setuptools]
+zip-safe = true
+packages = ["openmdao_extensions"]
