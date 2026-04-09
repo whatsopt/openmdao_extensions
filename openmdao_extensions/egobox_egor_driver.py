@@ -1,15 +1,21 @@
 import numpy as np
 import traceback
+import importlib.metadata
 
 from openmdao.core.driver import Driver, RecordingDebugging
 from openmdao.core.analysis_error import AnalysisError
+from packaging.version import Version
 
+EGOBOX_VERSION = None
 EGOBOX_NOT_INSTALLED = False
 try:
     import egobox as egx
     from egobox import Egor, GpConfig, TregoConfig, QEiConfig
+
+    EGOBOX_VERSION = Version(importlib.metadata.version("egobox"))
 except ImportError:
     EGOBOX_NOT_INSTALLED = True
+    EGOBOX_VERSION = None
 
 
 def to_list(lst, size):
@@ -31,7 +37,7 @@ class EgoboxEgorDriver(Driver):
         """Initialize the driver with the given options."""
         super(EgoboxEgorDriver, self).__init__(**kwargs)
 
-        if EGOBOX_NOT_INSTALLED:
+        if EGOBOX_VERSION is None:
             raise RuntimeError("egobox library is not installed.")
 
         # What we support
@@ -146,9 +152,16 @@ class EgoboxEgorDriver(Driver):
             "outdir": self.opt_settings.get("outdir", None),
             "hot_start": self.opt_settings.get("hot_start", False),
             "warm_start": self.opt_settings.get("warm_start", False),
-            "timeout": self.opt_settings.get("timeout", None),
             "verbose": self.opt_settings.get("verbose", False),
         }
+
+        # Timeout is introduced after 0.37.1
+        if (
+            self.opt_settings.get("timeout", None) is not None
+            and EGOBOX_VERSION
+            and EGOBOX_VERSION > Version("0.37.1")
+        ):
+            runargs["timeout"] = self.opt_settings["timeout"]
 
         # Run the optim
         optim = egor.minimize(self._objfunc, max_iters=n_iter, **runargs)
