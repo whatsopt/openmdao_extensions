@@ -105,6 +105,12 @@ class EgoboxEgorDriver(Driver):
                     "maxiter",
                     "run_info",
                     "fcstrs",
+                    "outdir",
+                    "seed",
+                    "hot_start",
+                    "timeout",
+                    "verbose",
+                    "warm_start",
                 ]
             }
         )
@@ -134,14 +140,24 @@ class EgoboxEgorDriver(Driver):
             **optim_settings,
         )
 
+        runargs = {
+            "run_info": self.opt_settings.get("run_info", egx.RunInfo()),
+            "seed": self.opt_settings.get("seed", None),
+            "outdir": self.opt_settings.get("outdir", None),
+            "hot_start": self.opt_settings.get("hot_start", False),
+            "warm_start": self.opt_settings.get("warm_start", False),
+            "timeout": self.opt_settings.get("timeout", None),
+            "verbose": self.opt_settings.get("verbose", False),
+        }
+
         # Run the optim
-        res = egor.minimize(self._objfunc, max_iters=n_iter)
+        optim = egor.minimize(self._objfunc, max_iters=n_iter, **runargs)
 
         # Set optimal parameters
         i = 0
         for name, meta in self._designvars.items():
             size = meta["size"]
-            self.set_design_var(name, res.x_opt[i : i + size])
+            self.set_design_var(name, optim.result.x_opt[i : i + size])
             i += size
 
         with RecordingDebugging(self.name, self.iter_count, self) as rec:
