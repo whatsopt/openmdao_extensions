@@ -74,7 +74,6 @@ class EgoboxEgorDriver(Driver):
 
     def run(self):
         """Run the optimization driver."""
-
         model = self._problem().model
 
         self.iter_count = 0
@@ -182,8 +181,7 @@ class EgoboxEgorDriver(Driver):
         return True
 
     def _initialize_vars(self, model):
-        """Format OpenMDAO design variables to suit EGOR implementation"""
-
+        """Format OpenMDAO design variables to suit EGOR implementation."""
         dvs_int = {}
         for name, meta in self._designvars.items():
             infos = model.get_io_metadata(includes=name)
@@ -218,8 +216,7 @@ class EgoboxEgorDriver(Driver):
         return variables
 
     def _initialize_cons(self):
-        """Format OpenMDAO constraints to suit EGOR implementation"""
-
+        """Format OpenMDAO constraints to suit EGOR implementation."""
         cstr_specs = []
         for name, meta in self._cons.items():
             if meta["indices"] is not None:
