@@ -44,7 +44,7 @@ class OpenturnsMonteCarloDOEGenerator(DOEGenerator):
                     p_high = min(p_high, self.LIMIT)
 
                     dists.append(ot.Uniform(p_low, p_high))
-            self.distribution = ot.ComposedDistribution(dists)
+            self.distribution = ot.JointDistribution(dists)
         else:
             size = 0
             for name, meta in uncertain_vars.items():
@@ -82,7 +82,7 @@ class OpenturnsDOEDriver(DOEDriver):
 
         self.options.declare(
             "distribution",
-            types=ot.ComposedDistribution,
+            types=ot.JointDistribution,
             default=None,
             allow_none=True,
             desc="Joint distribution of uncertain variables",
