@@ -82,7 +82,7 @@ class OpenturnsDOEDriver(DOEDriver):
 
         self.options.declare(
             "distribution",
-            types=ot.ComposedDistribution,
+            types=ot.JointDistribution,
             default=None,
             allow_none=True,
             desc="Joint distribution of uncertain variables",
